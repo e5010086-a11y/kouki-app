@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>こうきくんのあそびば</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #fff9f0;
+    min-height: 100vh;
+    overflow: hidden;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  body.home-open {
+    overflow: auto;
+  }
+
+  /* ===== ホーム画面 ===== */
+  #home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    gap: 20px;
+    padding: 30px 0 40px;
+    overflow-y: auto;
+    background: linear-gradient(160deg, #1a3a5c 0%, #1e6fa8 45%, #00b4d8 100%);
+  }
+  #home h1 {
+    font-size: clamp(30px, 9vw, 54px);
+    color: #ffffff;
+    letter-spacing: 3px;
+    text-align: center;
+    line-height: 1.3;
+    text-shadow:
+      3px 3px 0 #0a2540,
+      0 0 20px rgba(0,180,216,0.8);
+    font-weight: 900;
+  }
+  #home-subtitle {
+    font-size: clamp(16px, 4.5vw, 24px);
+    color: #7dd8f8;
+    letter-spacing: 5px;
+    font-weight: bold;
+    margin-top: -18px;
+  }
+  .mode-btn {
+    width: min(80vw, 320px);
+    padding: 28px 20px;
+    border: none;
+    border-radius: 30px;
+    font-size: clamp(22px, 6vw, 34px);
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+    transition: transform 0.1s, box-shadow 0.1s;
+    letter-spacing: 2px;
+  }
+  .mode-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 rgba(0,0,0,0.15); }
+
+  /* ===== ピアノページ ===== */
+  #piano-page { background: #f5f0ff; }
+  #piano-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    gap: 16px;
+    overflow: hidden;
+  }
+  #piano-note-display {
+    font-size: clamp(36px, 10vw, 60px);
+    font-weight: bold;
+    color: #7c5cbf;
+    letter-spacing: 4px;
+    min-height: 70px;
+    text-align: center;
+  }
+  #piano-keys {
+    position: relative;
+    display: flex;
+    touch-action: none;
+    user-select: none;
+  }
+  /* 白鍵 */
+  .p-white {
+    border: none;
+    border-radius: 0 0 12px 12px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.18);
+    transition: transform 0.08s, box-shadow 0.08s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 8px;
+    z-index: 1;
+    border: 1.5px solid #ccc;
+    border-top: none;
+  }
+  .p-white:active, .p-white.pressed {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.18);
+  }
+  /* 黒鍵 */
+  .p-black {
+    position: absolute;
+    border: none;
+    border-radius: 0 0 8px 8px;
+    cursor: pointer;
+    background: #222;
+    box-shadow: 0 5px 0 #000;
+    transition: transform 0.08s, box-shadow 0.08s;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 6px;
+    color: white;
+  }
+  .p-black:active, .p-black.pressed {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 #000;
+  }
+  .key-emoji  { line-height: 1; }
+  .key-label  { font-size: clamp(9px, 2.5vw, 13px); opacity: 0.75; margin-top: 3px; font-weight: bold; }
+
+  /* ===== ロック機能 ===== */
+  #lock-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+  #lock-overlay.show { display: flex; }
+  #lock-icon { font-size: 72px; animation: lockBounce 1.5s ease infinite alternate; }
+  @keyframes lockBounce { from{transform:scale(1)} to{transform:scale(1.1)} }
+  #lock-msg {
+    font-size: clamp(20px,6vw,30px); color:#fff;
+    font-weight:bold; letter-spacing:3px; text-align:center;
+  }
+  #lock-pin-dots {
+    display:flex; gap:16px;
+  }
+  .pin-dot {
+    width:22px; height:22px; border-radius:50%;
+    background: rgba(255,255,255,0.3);
+    border: 2px solid rgba(255,255,255,0.7);
+    transition: background 0.15s;
+  }
+  .pin-dot.filled { background: #FFD700; border-color:#FFD700; }
+  #lock-numpad {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+    margin-top:8px;
+  }
+  .pin-btn {
+    width: clamp(70px,18vw,90px); height: clamp(70px,18vw,90px);
+    border-radius:50%; border:none;
+    background: rgba(255,255,255,0.15);
+    color:white; font-size:clamp(24px,7vw,36px); font-weight:bold;
+    cursor:pointer; backdrop-filter:blur(4px);
+    transition: background 0.1s, transform 0.1s;
+  }
+  .pin-btn:active { background:rgba(255,255,255,0.4); transform:scale(0.93); }
+  #lock-error {
+    color:#ff6b6b; font-size:clamp(14px,4vw,18px);
+    font-weight:bold; min-height:24px; letter-spacing:2px;
+  }
+  /* トップバーのロックボタン */
+  .lock-btn {
+    font-size:24px; background:none; border:none; cursor:pointer; padding:8px;
+    opacity: 0.7;
+  }
+  .lock-btn.locked { opacity:1; }
+
+  /* ===== 共通ページ ===== */
+  .page { display: none; height: 100vh; flex-direction: column; }
+  .page.active { display: flex; }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(6px);
+  }
+  .back-btn {
+    font-size: 28px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+  }
+  .page-title {
+    font-size: clamp(18px, 5vw, 26px);
+    font-weight: bold;
+    color: #555;
+  }
+
+  /* ===== タップ遊びページ ===== */
+  #tap-page { background: #fffbe6; }
+  #tap-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  #tap-emoji {
+    font-size: clamp(100px, 30vw, 200px);
+    line-height: 1;
+    transition: transform 0.15s;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.15));
+  }
+  #tap-emoji.pop { animation: pop 0.3s ease; }
+  @keyframes pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.25) rotate(-5deg); }
+    70%  { transform: scale(0.95) rotate(3deg); }
+    100% { transform: scale(1); }
+  }
+  #tap-label {
+    margin-top: 20px;
+    font-size: clamp(32px, 10vw, 64px);
+    font-weight: bold;
+    color: #ff6b6b;
+    letter-spacing: 6px;
+    min-height: 80px;
+  }
+  #tap-hint {
+    font-size: clamp(16px, 4vw, 22px);
+    color: #aaa;
+    margin-top: 16px;
+    letter-spacing: 2px;
+  }
+  /* パーティクル */
+  .particle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 30px;
+    animation: fly 0.9s ease-out forwards;
+  }
+  @keyframes fly {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.3); }
+  }
+
+  /* ===== 音楽ページ ===== */
+  #music-page { background: #f0f4ff; }
+  #music-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 14px;
+    overflow: auto;
+  }
+  .music-btn {
+    background: white;
+    border: none;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.12);
+    padding: 16px 8px;
+    transition: transform 0.1s, box-shadow 0.1s;
+    min-height: 110px;
+  }
+  .music-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+  .music-btn.playing { animation: pulse 0.4s ease; }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.08); }
+  }
+  .music-btn .icon { font-size: clamp(32px, 9vw, 52px); }
+  .music-btn .name { font-size: clamp(13px, 3.5vw, 18px); font-weight: bold; color: #666; }
+
+  /* ===== モグラ叩きページ ===== */
+  #whack-page { background: linear-gradient(180deg, #87ceeb 0%, #90ee90 60%, #8B6914 100%); }
+  #whack-hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: rgba(0,0,0,0.25);
+    color: white;
+    font-weight: bold;
+    font-size: clamp(16px, 4.5vw, 22px);
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  #whack-hud span { white-space: nowrap; }
+  #whack-level-badge {
+    background: #FFD700;
+    color: #333;
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-size: clamp(14px, 3.5vw, 18px);
+  }
+  #whack-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 12px;
+    align-items: end;
+  }
+  .whack-hole {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+    cursor: pointer;
+  }
+  .hole-bg {
+    width: 100%;
+    aspect-ratio: 1;
+    background: radial-gradient(ellipse at 50% 70%, #5a3a00 60%, #3d2600 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 10px 20px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .chara {
+    font-size: clamp(60px, 18vw, 130px);
+    line-height: 1;
+    position: absolute;
+    bottom: -120%;
+    transition: bottom 0.18s cubic-bezier(.34,1.56,.64,1);
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    pointer-events: none;
+    user-select: none;
+  }
+  .chara.up   { bottom: -4%; }
+  .chara.hit  { animation: squish 0.25s ease forwards; bottom: -4%; }
+  @keyframes squish {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.4, 0.6); }
+    60%  { transform: scale(0.8, 1.2); }
+    100% { transform: scale(1); }
+  }
+  /* レベルアップ演出 */
+  #whack-levelup {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    gap: 16px;
+  }
+  #whack-levelup.show { display: flex; }
+  #whack-levelup .lvl-emoji { font-size: 80px; animation: bounce 0.6s ease infinite alternate; }
+  @keyframes bounce { from { transform: scale(1); } to { transform: scale(1.2); } }
+  #whack-levelup .lvl-text { font-size: clamp(28px, 8vw, 48px); font-weight: bold; text-shadow: 0 2px 8px #000; }
+  #whack-levelup .lvl-sub  { font-size: clamp(18px, 5vw, 28px); }
+  /* ゲームオーバー */
+  #whack-gameover {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    gap: 20px;
+  }
+  #whack-gameover.show { display: flex; }
+  #whack-gameover .go-title { font-size: clamp(36px, 10vw, 60px); font-weight: bold; }
+  #whack-gameover .go-score { font-size: clamp(24px, 7vw, 40px); }
+  #whack-gameover .go-btn {
+    padding: 18px 48px;
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    background: #ff8fab;
+    color: white;
+    box-shadow: 0 6px 0 #c0506e;
+    cursor: pointer;
+  }
+  /* 速度スライダー */
+  #whack-speed-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 16px;
+    background: rgba(0,0,0,0.18);
+    font-size: clamp(13px, 3.5vw, 17px);
+    color: white;
+    font-weight: bold;
+  }
+  #whack-speed-bar input[type=range] {
+    flex: 1;
+    accent-color: #FFD700;
+    height: 6px;
+  }
+  /* スコアポップ */
+  .score-pop {
+    position: fixed;
+    font-size: clamp(28px, 8vw, 48px);
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    pointer-events: none;
+    animation: scoreFly 0.8s ease-out forwards;
+    z-index: 50;
+  }
+  @keyframes scoreFly {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-80px) scale(1.4); }
+  }
+
+  /* ===== バルーンタップ ===== */
+  #balloon-page { background: linear-gradient(180deg, #87ceeb 0%, #b0e0ff 100%); }
+  #balloon-stage { flex:1; position:relative; overflow:hidden; }
+  .balloon {
+    position: absolute;
+    font-size: clamp(54px, 15vw, 90px);
+    line-height: 1;
+    cursor: pointer;
+    animation: floatUp var(--dur) linear forwards;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+    user-select: none;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) rotate(var(--rot)); opacity:1; }
+    100% { transform: translateY(-110vh) rotate(calc(var(--rot)*-1)); opacity:0.5; }
+  }
+  .balloon.pop { animation: balloonPop 0.3s ease forwards !important; }
+  @keyframes balloonPop {
+    0%  { transform: scale(1); opacity:1; }
+    40% { transform: scale(1.6); opacity:1; }
+    100%{ transform: scale(0);  opacity:0; }
+  }
+  #balloon-score {
+    position: absolute; top:12px; left:50%; transform:translateX(-50%);
+    font-size: clamp(22px,6vw,36px); font-weight:bold;
+    color:white; text-shadow:0 2px 6px rgba(0,0,0,0.4);
+    pointer-events:none; z-index:10; white-space:nowrap;
+  }
+
+  /* ===== 数字タッチ ===== */
+  #number-page { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+  #number-stage {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:20px; padding:20px; cursor:pointer; position:relative; overflow:hidden;
+  }
+  #number-big {
+    font-size: clamp(130px, 38vw, 240px);
+    font-weight:900; line-height:1;
+    color: #FFD700;
+    text-shadow: 0 0 30px rgba(255,215,0,0.7), 4px 4px 0 #a07000;
+    transition: transform 0.15s;
+  }
+  #number-big.pop { animation: numPop 0.35s ease; }
+  @keyframes numPop {
+    0%  { transform: scale(1); }
+    40% { transform: scale(1.3) rotate(-4deg); }
+    70% { transform: scale(0.9) rotate(3deg); }
+    100%{ transform: scale(1); }
+  }
+  #number-label {
+    font-size: clamp(28px, 8vw, 52px);
+    font-weight:bold; color:#fff;
+    letter-spacing:6px;
+  }
+  #number-dots {
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+    max-width:90vw;
+  }
+  .n-dot {
+    font-size: clamp(22px,6vw,38px);
+    animation: dotBounce 0.4s ease;
+  }
+  @keyframes dotBounce { 0%{transform:scale(0)} 60%{transform:scale(1.3)} 100%{transform:scale(1)} }
+
+  /* ===== 色の名前 ===== */
+  #color-page { background: #222; }
+  #color-stage {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:24px; padding:24px; cursor:pointer; position:relative; overflow:hidden;
+  }
+  #color-circle {
+    width: min(65vw, 280px);
+    height: min(65vw, 280px);
+    border-radius: 50%;
+    box-shadow: 0 0 60px var(--c, #fff), inset 0 8px 20px rgba(255,255,255,0.25);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  #color-circle.pop { animation: colorPop 0.3s ease; }
+  @keyframes colorPop {
+    0%  { transform: scale(1); }
+    40% { transform: scale(1.15); }
+    100%{ transform: scale(1); }
+  }
+  #color-name {
+    font-size: clamp(38px, 12vw, 72px);
+    font-weight:900; color:#fff;
+    letter-spacing:6px;
+    text-shadow: 0 0 20px var(--c,#fff), 3px 3px 0 rgba(0,0,0,0.5);
+    min-height: 90px; text-align:center;
+  }
+  #color-hint { font-size:clamp(16px,4vw,22px); color:#aaa; letter-spacing:2px; }
+
+  /* ===== おえかき ===== */
+  #draw-page { background: #f8f8f8; }
+  #draw-toolbar {
+    display:flex; align-items:center; gap:8px;
+    padding:8px 12px; background:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    overflow-x:auto; flex-shrink:0;
+  }
+  .color-swatch {
+    width: clamp(34px,9vw,48px); height: clamp(34px,9vw,48px);
+    border-radius:50%; border:3px solid transparent;
+    cursor:pointer; flex-shrink:0;
+    transition: transform 0.1s, border-color 0.1s;
+  }
+  .color-swatch.active { border-color:#333; transform:scale(1.2); }
+  #draw-clear {
+    margin-left:auto; padding:8px 18px; border:none;
+    border-radius:20px; background:#ff6b6b; color:white;
+    font-size:clamp(14px,3.5vw,18px); font-weight:bold; cursor:pointer;
+    flex-shrink:0;
+  }
+  #draw-size {
+    width:80px; accent-color:#333; flex-shrink:0;
+  }
+  #draw-canvas {
+    flex:1; width:100%; display:block;
+    touch-action:none; cursor:crosshair;
+  }
+  #btn-balloon { background: linear-gradient(135deg,#ff6b9d,#ff9eb5); color: white; }
+  #btn-number  { background: linear-gradient(135deg,#f9a825,#ffcc02); color: white; }
+  #btn-color   { background: linear-gradient(135deg,#ab47bc,#e040fb); color: white; }
+  #btn-draw    { background: linear-gradient(135deg,#26c6da,#00e5ff); color: white; }
+  #btn-tap     { background: linear-gradient(135deg,#ff8fab,#ffb3c6); color: white; }
+  #btn-music   { background: linear-gradient(135deg,#4fc3f7,#81d4fa); color: white; }
+  #btn-piano   { background: linear-gradient(135deg,#66bb6a,#a5d6a7); color: white; }
+  #btn-whack   { background: linear-gradient(135deg,#ffa726,#ffcc80); color: white; }
+</style>
+</head>
+<body class="home-open">
+
+<!-- ホーム画面 -->
+<div id="home">
+  <h1>🚀 こうきくんの<br>あそびば！</h1>
+  <div id="home-subtitle">⚡ LET'S PLAY ⚡</div>
+  <button class="mode-btn" id="btn-tap"     onclick="showPage('tap-page')">🐸 タップであそぶ</button>
+  <button class="mode-btn" id="btn-music"   onclick="showPage('music-page')">🎵 おんがくであそぶ</button>
+  <button class="mode-btn" id="btn-piano"   onclick="showPage('piano-page')">🎹 ピアノをひく</button>
+  <button class="mode-btn" id="btn-whack"   onclick="showPage('whack-page')">🔨 もぐらたたき</button>
+  <button class="mode-btn" id="btn-balloon" onclick="showPage('balloon-page')">🎈 バルーンタップ</button>
+  <button class="mode-btn" id="btn-number"  onclick="showPage('number-page')">🔢 かずをおぼえよう</button>
+  <button class="mode-btn" id="btn-color"   onclick="showPage('color-page')">🌈 いろのなまえ</button>
+  <button class="mode-btn" id="btn-draw"    onclick="showPage('draw-page')">🎨 おえかき</button>
+</div>
+
+<!-- ロックオーバーレイ -->
+<div id="lock-overlay">
+  <div id="lock-icon">🔒</div>
+  <div id="lock-msg">ロック中<br><span style="font-size:0.6em;opacity:0.7">PINをにゅうりょく</span></div>
+  <div id="lock-pin-dots">
+    <div class="pin-dot" id="dot0"></div>
+    <div class="pin-dot" id="dot1"></div>
+    <div class="pin-dot" id="dot2"></div>
+    <div class="pin-dot" id="dot3"></div>
+  </div>
+  <div id="lock-error"></div>
+  <div id="lock-numpad">
+    <button class="pin-btn" onclick="pinInput('1')">1</button>
+    <button class="pin-btn" onclick="pinInput('2')">2</button>
+    <button class="pin-btn" onclick="pinInput('3')">3</button>
+    <button class="pin-btn" onclick="pinInput('4')">4</button>
+    <button class="pin-btn" onclick="pinInput('5')">5</button>
+    <button class="pin-btn" onclick="pinInput('6')">6</button>
+    <button class="pin-btn" onclick="pinInput('7')">7</button>
+    <button class="pin-btn" onclick="pinInput('8')">8</button>
+    <button class="pin-btn" onclick="pinInput('9')">9</button>
+    <button class="pin-btn" style="background:rgba(255,100,100,0.3)" onclick="pinClear()">✕</button>
+    <button class="pin-btn" onclick="pinInput('0')">0</button>
+    <button class="pin-btn" style="background:rgba(100,255,100,0.3)" onclick="pinBackspace()">⌫</button>
+  </div>
+</div>
+
+<!-- タップ遊びページ -->
+<div id="tap-page" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">⬅️</button>
+    <span class="page-title">タップしてみよう！</span>
+    <button class="lock-btn" onclick="toggleLock()" id="lock-toggle-btn">🔓</button>
+  </div>
+  <div id="tap-stage" onclick="nextItem(event)">
+    <div id="tap-emoji">🐘</div>
+    <div id="tap-label">ぞう</div>
+    <div id="tap-hint">👆 タップしてね</div>
+  </div>
+</div>
+
+<!-- モグラ叩きページ -->
+<div id="whack-page" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="stopWhack(); showHome()">⬅️</button>
+    <span class="page-title">🔨 もぐらたたき！</span>
+    <button class="lock-btn" onclick="toggleLock()" id="lock-toggle-btn">🔓</button>
+  </div>
+  <div id="whack-speed-bar">
+    <span>🐢</span>
+    <input type="range" id="whack-speed" min="1" max="5" value="2" oninput="updateSpeedLabel()">
+    <span>🐇</span>
+    <span id="whack-speed-label">ふつう</span>
+  </div>
+  <div id="whack-hud">
+    <span>⭐ <span id="whack-score">0</span>てん</span>
+    <span id="whack-level-badge">レベル 1</span>
+    <span id="whack-combo"></span>
+    <button onclick="startWhack()" style="background:#FFD700;border:none;border-radius:20px;padding:6px 18px;font-size:clamp(14px,3.5vw,18px);font-weight:bold;cursor:pointer;">▶ スタート</button>
+  </div>
+  <div id="whack-grid"></div>
+</div>
+
+<!-- レベルアップ演出 -->
+<div id="whack-levelup">
+  <div class="lvl-emoji">🎉</div>
+  <div class="lvl-text" id="lvl-text">レベル 2 アップ！</div>
+  <div class="lvl-sub" id="lvl-sub">はやくなったよ！</div>
+</div>
+
+<!-- ゲームオーバー -->
+<div id="whack-gameover">
+  <div class="go-title">🎊 おわり！</div>
+  <div class="go-score">⭐ <span id="go-score">0</span>てん</div>
+  <div class="go-score">🏆 さいこうレベル: <span id="go-level">1</span></div>
+  <button class="go-btn" onclick="startWhack()">もういちど！</button>
+  <button class="go-btn" style="background:#a0d2eb;box-shadow:0 6px 0 #6aaabb;" onclick="document.getElementById('whack-gameover').classList.remove('show');stopWhack();showHome()">ホームへ</button>
+</div>
+
+<!-- ピアノページ -->
+<div id="piano-page" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">⬅️</button>
+    <span class="page-title">🎹 ピアノをひこう！</span>
+    <button class="lock-btn" onclick="toggleLock()">🔓</button>
+  </div>
+  <div id="piano-wrap">
+    <div id="piano-note-display">タッチしてね🎵</div>
+    <div id="piano-keys"></div>
+  </div>
+</div>
+
+<!-- バルーンタップページ -->
+<div id="balloon-page" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="stopBalloon(); showHome()">⬅️</button>
+    <span class="page-title">🎈 バルーンタップ！</span>
+    <button class="lock-btn" onclick="toggleLock()">🔓</button>
+  </div>
+  <div id="balloon-stage">
+    <div id="balloon-score">⭐ 0</div>
+  </div>
+</div>
+
+<!-- 数字タッチページ -->
+<div id="number-page" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">⬅️</button>
+    <span class="page-title">🔢 かずをおぼえよう！</span>
+    <button class="lock-btn" onclick="toggleLock()">🔓</button>
+  </div>
+  <div id="number-stage" onclick="nextNumber(event)">
+    <div id="number-big">1</div>
+    <div id="number-label">いち</div>
+    <div id="number-dots"></div>
+  </div>
+</div>
+
+<!-- 色の名前ページ -->
+<div id="color-page" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">⬅️</button>
+    <span class="page-title">🌈 いろのなまえ！</span>
+    <button class="lock-btn" onclick="toggleLock()">🔓</button>
+  </div>
+  <div id="color-stage" onclick="nextColor(event)">
+    <div id="color-circle"></div>
+    <div id="color-name">あか</div>
+    <div id="color-hint">👆 タップしてね</div>
+  </div>
+</div>
+
+<!-- おえかきページ -->
+<div id="draw-page" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">⬅️</button>
+    <span class="page-title">🎨 おえかき！</span>
+    <button class="lock-btn" onclick="toggleLock()">🔓</button>
+  </div>
+  <div id="draw-toolbar">
+    <input type="range" id="draw-size" min="10" max="60" value="28" title="ふとさ">
+    <div class="color-swatch active" style="background:#ff4444" data-color="#ff4444" onclick="setDrawColor(this)"></div>
+    <div class="color-swatch" style="background:#ff9900" data-color="#ff9900" onclick="setDrawColor(this)"></div>
+    <div class="color-swatch" style="background:#FFD700" data-color="#FFD700" onclick="setDrawColor(this)"></div>
+    <div class="color-swatch" style="background:#44cc44" data-color="#44cc44" onclick="setDrawColor(this)"></div>
+    <div class="color-swatch" style="background:#4488ff" data-color="#4488ff" onclick="setDrawColor(this)"></div>
+    <div class="color-swatch" style="background:#cc44cc" data-color="#cc44cc" onclick="setDrawColor(this)"></div>
+    <div class="color-swatch" style="background:#ffffff;border:2px solid #ccc" data-color="#ffffff" onclick="setDrawColor(this)"></div>
+    <div class="color-swatch" style="background:#222222" data-color="#222222" onclick="setDrawColor(this)"></div>
+    <button id="draw-clear" onclick="clearCanvas()">🗑 けす</button>
+  </div>
+  <canvas id="draw-canvas"></canvas>
+</div>
+
+<!-- 音楽ページ -->
+<div id="music-page" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">⬅️</button>
+    <span class="page-title">おんがくであそぼう！</span>
+    <button class="lock-btn" onclick="toggleLock()">🔓</button>
+  </div>
+  <div id="music-grid"></div>
+</div>
+
+<script>
+// ===================================================
+// データ定義
+// ===================================================
+const ITEMS = [
+  { emoji: "🐘", label: "ぞう",     sound: [200,0.6,0.8,0.4] },
+  { emoji: "🐱", label: "ねこ",     sound: [800,0.4,0.4,0.3] },
+  { emoji: "🐶", label: "いぬ",     sound: [500,0.5,0.5,0.3] },
+  { emoji: "🐸", label: "かえる",   sound: [350,0.6,0.3,0.2] },
+  { emoji: "🐥", label: "ひよこ",   sound: [1200,0.3,0.3,0.2] },
+  { emoji: "🐢", label: "かめ",     sound: [250,0.5,0.6,0.4] },
+  { emoji: "🦋", label: "ちょうちょ",sound: [900,0.3,0.5,0.3] },
+  { emoji: "🐰", label: "うさぎ",   sound: [700,0.4,0.4,0.25] },
+  { emoji: "🦊", label: "きつね",   sound: [600,0.5,0.5,0.3] },
+  { emoji: "🐻", label: "くま",     sound: [180,0.7,0.7,0.5] },
+  { emoji: "🍎", label: "りんご",   sound: [440,0.4,0.3,0.2] },
+  { emoji: "🍌", label: "ばなな",   sound: [550,0.4,0.35,0.2] },
+  { emoji: "⭐",  label: "ほし",     sound: [1000,0.3,0.6,0.4] },
+  { emoji: "🌈", label: "にじ",     sound: [660,0.3,0.7,0.5] },
+  { emoji: "🎈", label: "ふうせん", sound: [880,0.4,0.4,0.3] },
+];
+
+const MUSIC_BUTTONS = [
+  { icon:"🥁", name:"ドン", color:"#ffb3ba", freqs:[120,0.9,0.1,0.15], type:"drum" },
+  { icon:"🔔", name:"チーン", color:"#ffe4a0", freqs:[1200,0.6,1.2,0.8], type:"bell" },
+  { icon:"🎹", name:"ドレミ", color:"#b3d9ff", freqs:[261,0.5,0.4,0.3], type:"piano" },
+  { icon:"🎺", name:"プッポー", color:"#ffd6a5", freqs:[440,0.7,0.3,0.2], type:"trumpet" },
+  { icon:"🎸", name:"ジャーン", color:"#d4f5c0", freqs:[220,0.8,0.6,0.5], type:"guitar" },
+  { icon:"🎻", name:"ビョーン", color:"#e8c8ff", freqs:[330,0.6,0.8,0.6], type:"violin" },
+  { icon:"🐧", name:"ペンペン", color:"#c8e6ff", freqs:[600,0.5,0.3,0.2], type:"cute" },
+  { icon:"🌟", name:"キラキラ", color:"#fff5c8", freqs:[1400,0.4,1.0,0.7], type:"sparkle" },
+  { icon:"🎶", name:"うた", color:"#ffc8e8", freqs:[528,0.5,0.5,0.4], type:"song" },
+];
+
+const PARTICLES = ["⭐","✨","🌸","💛","💙","🌟","🎀","🎵","❤️"];
+
+// ===================================================
+// Web Audio
+// ===================================================
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playTone(freq, gain, duration, type="sine", detune=0) {
+  const ctx = getAudio();
+  const osc = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+  osc.connect(gainNode);
+  gainNode.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  if (detune) osc.detune.setValueAtTime(detune, ctx.currentTime);
+  gainNode.gain.setValueAtTime(gain, ctx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + duration);
+}
+
+function playItemSound([freq, gain, dur]) {
+  playTone(freq, gain, dur, "sine");
+  playTone(freq * 1.5, gain * 0.3, dur * 0.7, "sine", 5);
+}
+
+function playMusicSound(type, [freq, gain, dur]) {
+  if (type === "drum") {
+    playTone(80,  gain, 0.3, "sine");
+    playTone(200, gain*0.8, 0.1, "triangle");
+  } else if (type === "bell") {
+    [1,2,3,4].forEach((m,i) => playTone(freq*m, gain/(i+1), dur, "sine"));
+  } else if (type === "sparkle") {
+    [0,0.1,0.2,0.3].forEach(t => {
+      const ctx = getAudio();
+      setTimeout(()=>playTone(freq + Math.random()*400, gain*0.5, dur*0.5, "sine"), t*1000);
+    });
+  } else if (type === "song") {
+    const notes = [261,293,330,349,392];
+    notes.forEach((n,i) => {
+      setTimeout(()=>playTone(n, gain, 0.3, "sine"), i*200);
+    });
+  } else if (type === "guitar") {
+    playTone(freq, gain, dur, "sawtooth");
+    playTone(freq*2, gain*0.4, dur*0.7, "sine");
+  } else if (type === "trumpet") {
+    playTone(freq, gain, dur, "square");
+    setTimeout(()=>playTone(freq*1.5, gain*0.5, dur*0.5, "square"), 80);
+  } else {
+    playTone(freq, gain, dur, "sine");
+    playTone(freq*1.5, gain*0.3, dur*0.6, "sine");
+  }
+}
+
+// ===================================================
+// タップ遊び
+// ===================================================
+let currentIdx = 0;
+
+function nextItem(e) {
+  currentIdx = (currentIdx + 1) % ITEMS.length;
+  const item = ITEMS[currentIdx];
+  const emojiEl = document.getElementById("tap-emoji");
+  const labelEl = document.getElementById("tap-label");
+
+  emojiEl.textContent = item.emoji;
+  labelEl.textContent = item.label;
+
+  emojiEl.classList.remove("pop");
+  void emojiEl.offsetWidth;
+  emojiEl.classList.add("pop");
+
+  playItemSound(item.sound);
+  speakWord(item.label);
+  spawnParticles(e);
+  document.getElementById("tap-hint").style.opacity = "0";
+}
+
+let jaVoices = [];
+function loadVoices() {
+  const all = window.speechSynthesis.getVoices();
+  jaVoices = all.filter(v => v.lang && v.lang.startsWith("ja"));
+}
+if ('speechSynthesis' in window) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function pickVoice() {
+  if (!jaVoices.length) return null;
+  const prefer = ["O-ren","Kyoko","Otoya","Hattori","Google 日本語","Microsoft Haruka"];
+  for (const name of prefer) {
+    const v = jaVoices.find(v => v.name.includes(name));
+    if (v) return v;
+  }
+  return jaVoices[0];
+}
+
+function speakWord(word) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const doSpeak = () => {
+    const utter = new SpeechSynthesisUtterance(word);
+    utter.lang = "ja-JP";
+    utter.rate = 0.75;
+    utter.pitch = 1.3;
+    const voice = pickVoice();
+    if (voice) utter.voice = voice;
+    window.speechSynthesis.speak(utter);
+  };
+  if (jaVoices.length) {
+    doSpeak();
+  } else {
+    const handler = () => { loadVoices(); doSpeak(); window.speechSynthesis.onvoiceschanged = null; };
+    window.speechSynthesis.onvoiceschanged = handler;
+    setTimeout(doSpeak, 300);
+  }
+}
+
+function spawnParticles(e) {
+  const stage = document.getElementById("tap-stage");
+  const rect = stage.getBoundingClientRect();
+  const cx = e.clientX ? e.clientX - rect.left : rect.width/2;
+  const cy = e.clientY ? e.clientY - rect.top  : rect.height/2;
+  for (let i = 0; i < 8; i++) {
+    const el = document.createElement("div");
+    el.className = "particle";
+    el.textContent = PARTICLES[Math.floor(Math.random() * PARTICLES.length)];
+    const angle = (Math.PI * 2 / 8) * i;
+    const dist = 80 + Math.random() * 60;
+    el.style.left = cx + "px";
+    el.style.top  = cy + "px";
+    el.style.setProperty("--tx", Math.cos(angle)*dist + "px");
+    el.style.setProperty("--ty", Math.sin(angle)*dist + "px");
+    stage.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+}
+
+// ===================================================
+// 音楽ボタン生成
+// ===================================================
+function buildMusicGrid() {
+  const grid = document.getElementById("music-grid");
+  MUSIC_BUTTONS.forEach(btn => {
+    const el = document.createElement("button");
+    el.className = "music-btn";
+    el.style.background = btn.color;
+    el.innerHTML = `<span class="icon">${btn.icon}</span><span class="name">${btn.name}</span>`;
+    el.addEventListener("click", () => {
+      playMusicSound(btn.type, btn.freqs);
+      el.classList.remove("playing");
+      void el.offsetWidth;
+      el.classList.add("playing");
+    });
+    grid.appendChild(el);
+  });
+}
+
+// ===================================================
+// ページ切り替え
+// ===================================================
+function showPage(id) {
+  document.body.classList.remove("home-open");
+  document.getElementById("home").style.display = "none";
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  if (id === "tap-page") {
+    currentIdx = -1;
+    nextItem({clientX: null, clientY: null});
+    document.getElementById("tap-hint").style.opacity = "1";
+  } else if (id === "balloon-page") {
+    startBalloon();
+  } else if (id === "number-page") {
+    initNumber();
+  } else if (id === "color-page") {
+    initColor();
+  } else if (id === "draw-page") {
+    setTimeout(initCanvas, 50);
+  }
+}
+function showHome() {
+  stopBalloon();
+  document.body.classList.add("home-open");
+  document.getElementById("home").style.display = "flex";
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+}
+
+// ===================================================
+りはっきり
+    utter.pitch = 1.3;   // 少し高めで聞き取りやすく
+    const voice = pickVoice();
+    if (voice) utter.voice = voice;
+    window.speechSynthesis.speak(utter);
+  };
+
+  if (jaVoices.length) {
+    doSpeak();
+  } else {
+    const handler = () => { loadVoices(); doSpeak(); window.speechSynthesis.onvoiceschanged = null; };
+    window.speechSynthesis.onvoiceschanged = handler;
+    setTimeout(doSpeak, 300);
+  }
+}
+
+function spawnParticles(e) {
+  const stage = document.getElementById("tap-stage");
+  const rect = stage.getBoundingClientRect();
+  const cx = e.clientX ? e.clientX - rect.left : rect.width/2;
+  const cy = e.clientY ? e.clientY - rect.top  : rect.height/2;
+
+  for (let i = 0; i < 8; i++) {
+    const el = document.createElement("div");
+    el.className = "particle";
+    el.textContent = PARTICLES[Math.floor(Math.random() * PARTICLES.length)];
+    const angle = (Math.PI * 2 / 8) * i;
+    const dist = 80 + Math.random() * 60;
+    el.style.left = cx + "px";
+    el.style.top  = cy + "px";
+    el.style.setProperty("--tx", Math.cos(angle)*dist + "px");
+    el.style.setProperty("--ty", Math.sin(angle)*dist + "px");
+    stage.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+}
+
+// ===================================================
+// 音楽ボタン生成
+// ===================================================
+function buildMusicGrid() {
+  const grid = document.getElementById("music-grid");
+  MUSIC_BUTTONS.forEach(btn => {
+    const el = document.createElement("button");
+    el.className = "music-btn";
+    el.style.background = btn.color;
+    el.innerHTML = `<span class="icon">${btn.icon}</span><span class="name">${btn.name}</span>`;
+    el.addEventListener("click", () => {
+      playMusicSound(btn.type, btn.freqs);
+      el.classList.remove("playing");
+      void el.offsetWidth;
+      el.classList.add("playing");
+    });
+    grid.appendChild(el);
+  });
+}
+
+// ===================================================
+// ページ切り替え
+// ===================================================
+function showPage(id) {
+  document.body.classList.remove("home-open");
+  document.getElementById("home").style.display = "none";
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+
+  if (id === "tap-page") {
+    currentIdx = -1;
+    nextItem({clientX: null, clientY: null});
+    document.getElementById("tap-hint").style.opacity = "1";
+  } else if (id === "balloon-page") {
+    startBalloon();
+  } else if (id === "number-page") {
+    initNumber();
+  } else if (id === "color-page") {
+    initColor();
+  } else if (id === "draw-page") {
+    setTimeout(initCanvas, 50);
+  }
+}
+function showHome() {
+  stopBalloon();
+  document.body.classList.add("home-open");
+  document.getElementById("home").style.display = "flex";
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+}
+
+// ===================================================
+// ピアノ（白鍵＋黒鍵）
+// ===================================================
+
+// 白鍵: ド～ド（1オクターブ+1）
+const WHITE_KEYS = [
+  { note:"ド",  freq:261.6, color:"#ffcdd2", emoji:"🍓" },
+  { note:"レ",  freq:293.7, color:"#ffe0b2", emoji:"🍊" },
+  { note:"ミ",  freq:329.6, color:"#fff9c4", emoji:"🌟" },
+  { note:"ファ",freq:349.2, color:"#c8e6c9", emoji:"🍀" },
+  { note:"ソ",  freq:392.0, color:"#b3e5fc", emoji:"🐬" },
+  { note:"ラ",  freq:440.0, color:"#d1c4e9", emoji:"🍇" },
+  { note:"シ",  freq:493.9, color:"#f8bbd0", emoji:"🌸" },
+  { note:"ド↑", freq:523.3, color:"#ffcdd2", emoji:"🎀" },
+];
+
+const BLACK_KEYS = [
+  { after:0, note:"ド#", freq:277.2, emoji:"⭐" },
+  { after:1, note:"レ#", freq:311.1, emoji:"🌙" },
+  { after:3, note:"ファ#",freq:370.0, emoji:"💜" },
+  { after:4, note:"ソ#", freq:415.3, emoji:"🔵" },
+  { after:5, note:"ラ#", freq:466.2, emoji:"💎" },
+];
+
+function playPianoKey(freq) {
+  const ctx = getAudio();
+  [[1,0.6],[2,0.2],[3,0.1],[4,0.05]].forEach(([mult, g]) => {
+    const osc = ctx.createOscillator();
+    const gn  = ctx.createGain();
+    osc.connect(gn); gn.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq * mult, ctx.currentTime);
+    gn.gain.setValueAtTime(g, ctx.currentTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 1.5);
+  });
+}
+
+function buildPianoKeys() {
+  const wrap = document.getElementById("piano-keys");
+  wrap.innerHTML = "";
+
+  const vw = window.innerWidth;
+  const WN = WHITE_KEYS.length;
+  const gap = 3;
+  const wKeyW = Math.min(Math.floor((vw - 32 - gap*(WN-1)) / WN), 68);
+  const wKeyH = Math.min(wKeyW * 3.0, 200);
+  const bKeyW = Math.round(wKeyW * 0.62);
+  const bKeyH = Math.round(wKeyH * 0.62);
+
+  const totalW = WN * wKeyW + (WN-1) * gap;
+  wrap.style.width  = totalW + "px";
+  wrap.style.height = wKeyH + "px";
+
+  WHITE_KEYS.forEach((k, i) => {
+    const btn = document.createElement("button");
+    btn.className = "p-white";
+    const left = i * (wKeyW + gap);
+    btn.style.cssText = `
+      width:${wKeyW}px; height:${wKeyH}px;
+      background:${k.color};
+      position:absolute; left:${left}px; top:0;
+    `;
+    const emojiSize = Math.max(Math.round(wKeyW * 0.45), 18);
+    btn.innerHTML = `<span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>
+                     <span class="key-label">${k.note}</span>`;
+    const play = () => {
+      playPianoKey(k.freq);
+      document.getElementById("piano-note-display").textContent = k.emoji + " " + k.note;
+      btn.classList.add("pressed");
+      setTimeout(() => btn.classList.remove("pressed"), 200);
+    };
+    btn.addEventListener("touchstart", e => { e.preventDefault(); play(); }, { passive: false });
+    btn.addEventListener("mousedown",  e => { e.preventDefault(); play(); });
+    wrap.appendChild(btn);
+  });
+
+  BLACK_KEYS.forEach(k => {
+    const btn = document.createElement("button");
+    btn.className = "p-black";
+    const center = (k.after + 1) * (wKeyW + gap) - gap/2;
+    const left   = Math.round(center - bKeyW / 2);
+    btn.style.cssText = `
+      width:${bKeyW}px; height:${bKeyH}px;
+      left:${left}px; top:0;
+    `;
+    const emojiSize = Math.max(Math.round(bKeyW * 0.45), 14);
+    btn.innerHTML = `<span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>
+                     <span class="key-label" style="color:#aaa">${k.note}</span>`;
+    const play = () => {
+      playPianoKey(k.freq);
+      document.getElementById("piano-note-display").textContent = k.emoji + " " + k.note;
+      btn.classList.add("pressed");
+      setTimeout(() => btn.classList.remove("pressed"), 200);
+    };
+    btn.addEventListener("touchstart", e => { e.preventDefault(); play(); }, { passive: false });
+    btn.addEventListener("mousedown",  e => { e.preventDefault(); play(); });
+    wrap.appendChild(btn);
+  });
+}
+
+// ===================================================
+// モグラ叩き
+// ===================================================
+
+const WHACK_CHARAS = ["🤖","🐙","👾","🦁","🐯","🐻‍❄️","🐼","🦊","🐸","🐧","🦄","🐮"];
+
+const WHACK_LEVELS = [
+  { hitTarget: 5,  upTime: 2400, interval: 1800, label:"レベル 1", sub:"ゆっくり" },
+  { hitTarget: 8,  upTime: 2000, interval: 1500, label:"レベル 2", sub:"すこしはやい" },
+  { hitTarget:12,  upTime: 1700, interval: 1200, label:"レベル 3", sub:"はやい！" },
+  { hitTarget:16,  upTime: 1400, interval: 1000, label:"レベル 4", sub:"もっとはやい！" },
+  { hitTarget:20,  upTime: 1100, interval: 800,  label:"レベル 5", sub:"めちゃはやい！🔥" },
+];
+
+const HOLES = 9;
+let whackTimers   = [];
+let whackLoop     = null;
+let whackScore    = 0;
+let whackLevel    = 0;
+let whackHits     = 0;
+let whackCombo    = 0;
+let whackActive   = false;
+let whackUpStates = new Array(HOLES).fill(false);
+let whackGameTime = 60;
+let whackTimerEl  = null;
+let whackCountdown= null;
+
+function speedMult() {
+  const v = parseInt(document.getElementById("whack-speed").value);
+  return [1.8, 1.3, 1.0, 0.75, 0.55][v-1];
+}
+const SPEED_LABELS = ["おそい","ふつう","はやい","とてもはやい","ちょうはやい！"];
+function updateSpeedLabel() {
+  const v = parseInt(document.getElementById("whack-speed").value);
+  document.getElementById("whack-speed-label").textContent = SPEED_LABELS[v-1];
+}
+
+function buildWhackGrid() {
+  const grid = document.getElementById("whack-grid");
+  grid.innerHTML = "";
+  for (let i = 0; i < HOLES; i++) {
+    const hole = document.createElement("div");
+    hole.className = "whack-hole";
+    const bg = document.createElement("div");
+    bg.className = "hole-bg";
+    const chara = document.createElement("div");
+    chara.className = "chara";
+    chara.dataset.idx = i;
+    chara.textContent = WHACK_CHARAS[i % WHACK_CHARAS.length];
+    bg.appendChild(chara);
+    hole.appendChild(bg);
+    hole.addEventListener("touchstart", e => { e.preventDefault(); whackHit(i, chara, e); }, { passive: false });
+    hole.addEventListener("mousedown",  e => whackHit(i, chara, e));
+    grid.appendChild(hole);
+  }
+}
+
+function getLevel() { return WHACK_LEVELS[Math.min(whackLevel, WHACK_LEVELS.length-1)]; }
+
+function whackHit(idx, charaEl, e) {
+  if (!whackActive) return;
+  if (!whackUpStates[idx]) return;
+
+  whackUpStates[idx] = false;
+  clearTimeout(whackTimers[idx]);
+  charaEl.classList.remove("up");
+  charaEl.classList.add("hit");
+  setTimeout(() => { charaEl.classList.remove("hit"); }, 300);
+
+  whackScore++;
+  whackHits++;
+  whackCombo++;
+
+  const pop = document.createElement("div");
+  pop.className = "score-pop";
+  const touch = e.touches ? e.touches[0] : e;
+  pop.style.left = (touch.clientX - 20) + "px";
+  pop.style.top  = (touch.clientY - 30) + "px";
+  pop.textContent = whackCombo >= 3 ? `✨+${whackCombo}コンボ！` : "+1";
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 800);
+
+  playTone(600, 0.5, 0.15, "sine");
+  playTone(900, 0.3, 0.1,  "sine");
+
+  document.getElementById("whack-score").textContent = whackScore;
+  if (whackCombo >= 3) document.getElementById("whack-combo").textContent = `🔥 ${whackCombo}れんぞく！`;
+
+  const lv = getLevel();
+  if (whackHits >= lv.hitTarget) {
+    whackLevelUp();
+  }
+}
+
+function whackLevelUp() {
+  if (whackLevel >= WHACK_LEVELS.length - 1) return;
+  clearWhackLoop();
+  whackLevel++;
+  whackHits = 0;
+  const lv = getLevel();
+
+  document.getElementById("lvl-text").textContent = lv.label + " アップ！";
+  document.getElementById("lvl-sub").textContent  = lv.sub;
+  const lvup = document.getElementById("whack-levelup");
+  lvup.classList.add("show");
+
+  [400,500,600,800].forEach((f,i) => setTimeout(()=>playTone(f,0.4,0.2,"sine"), i*100));
+
+  setTimeout(() => {
+    lvup.classList.remove("show");
+    document.getElementById("whack-level-badge").textContent = lv.label;
+    resumeWhackLoop();
+  }, 1800);
+}
+
+function startWhack() {
+  document.getElementById("whack-gameover").classList.remove("show");
+  document.getElementById("whack-levelup").classList.remove("show");
+  stopWhack();
+
+  whackScore  = 0;
+  whackLevel  = 0;
+  whackHits   = 0;
+  whackCombo  = 0;
+  whackActive = true;
+  whackGameTime = 60;
+  whackUpStates = new Array(HOLES).fill(false);
+
+  document.getElementById("whack-score").textContent = "0";
+  document.getElementById("whack-combo").textContent = "";
+  document.getElementById("whack-level-badge").textContent = "レベル 1";
+
+  buildWhackGrid();
+  resumeWhackLoop();
+
+  whackCountdown = setInterval(() => {
+    whackGameTime--;
+    if (whackGameTime <= 0) {
+      clearInterval(whackCountdown);
+      endWhack();
+    }
+  }, 1000);
+}
+
+function resumeWhackLoop() {
+  const lv = getLeムキャラ割り当て
+    chara.textContent = WHACK_CHARAS[i % WHACK_CHARAS.length];
+    bg.appendChild(chara);
+    hole.appendChild(bg);
+    hole.addEventListener("touchstart", e => { e.preventDefault(); whackHit(i, chara, e); }, { passive: false });
+    hole.addEventListener("mousedown",  e => whackHit(i, chara, e));
+    grid.appendChild(hole);
+  }
+}
+
+function getLevel() { return WHACK_LEVELS[Math.min(whackLevel, WHACK_LEVELS.length-1)]; }
+
+function whackHit(idx, charaEl, e) {
+  if (!whackActive) return;
+  if (!whackUpStates[idx]) return; // 出ていない穴を叩いた
+
+  whackUpStates[idx] = false;
+  clearTimeout(whackTimers[idx]);
+  charaEl.classList.remove("up");
+  charaEl.classList.add("hit");
+  setTimeout(() => { charaEl.classList.remove("hit"); }, 300);
+
+  whackScore++;
+  whackHits++;
+  whackCombo++;
+
+  // スコアポップ表示
+  const pop = document.createElement("div");
+  pop.className = "score-pop";
+  const touch = e.touches ? e.touches[0] : e;
+  pop.style.left = (touch.clientX - 20) + "px";
+  pop.style.top  = (touch.clientY - 30) + "px";
+  pop.textContent = whackCombo >= 3 ? `✨+${whackCombo}コンボ！` : "+1";
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 800);
+
+  // ヒット音
+  playTone(600, 0.5, 0.15, "sine");
+  playTone(900, 0.3, 0.1,  "sine");
+
+  document.getElementById("whack-score").textContent = whackScore;
+  if (whackCombo >= 3) document.getElementById("whack-combo").textContent = `🔥 ${whackCombo}れんぞく！`;
+
+  // レベルアップチェック
+  const lv = getLevel();
+  if (whackHits >= lv.hitTarget) {
+    whackLevelUp();
+  }
+}
+
+function whackLevelUp() {
+  if (whackLevel >= WHACK_LEVELS.length - 1) return; // 最高レベル
+  clearWhackLoop();
+  whackLevel++;
+  whackHits = 0;
+  const lv = getLevel();
+
+  // 演出
+  document.getElementById("lvl-text").textContent = lv.label + " アップ！";
+  document.getElementById("lvl-sub").textContent  = lv.sub;
+  const lvup = document.getElementById("whack-levelup");
+  lvup.classList.add("show");
+
+  // レベルアップ音（上昇音）
+  [400,500,600,800].forEach((f,i) => setTimeout(()=>playTone(f,0.4,0.2,"sine"), i*100));
+
+  setTimeout(() => {
+    lvup.classList.remove("show");
+    document.getElementById("whack-level-badge").textContent = lv.label;
+    resumeWhackLoop();
+  }, 1800);
+}
+
+function startWhack() {
+  document.getElementById("whack-gameover").classList.remove("show");
+  document.getElementById("whack-levelup").classList.remove("show");
+  stopWhack();
+
+  whackScore  = 0;
+  whackLevel  = 0;
+  whackHits   = 0;
+  whackCombo  = 0;
+  whackActive = true;
+  whackGameTime = 60;
+  whackUpStates = new Array(HOLES).fill(false);
+
+  document.getElementById("whack-score").textContent = "0";
+  document.getElementById("whack-combo").textContent = "";
+  document.getElementById("whack-level-badge").textContent = "レベル 1";
+
+  buildWhackGrid();
+  resumeWhackLoop();
+
+  // カウントダウン（60秒）
+  whackCountdown = setInterval(() => {
+    whackGameTime--;
+    if (whackGameTime <= 0) {
+      clearInterval(whackCountdown);
+      endWhack();
+    }
+  }, 1000);
+}
+
+function resumeWhackLoop() {
+  const lv = getLevel();
+  const mult = speedMult();
+  const interval = Math.round(lv.interval * mult);
+  const upTime   = Math.round(lv.upTime   * mult);
+
+  whackLoop = setInterval(() => {
+    if (!whackActive) return;
+    const numPop = whackLevel >= 3 ? 2 : 1;
+    const candidates = [];
+    for (let i = 0; i < HOLES; i++) if (!whackUpStates[i]) candidates.push(i);
+    candidates.sort(() => Math.random()-0.5);
+    candidates.slice(0, numPop).forEach(idx => popChara(idx, upTime));
+  }, interval);
+}
+
+function popChara(idx, upTime) {
+  const charas = document.querySelectorAll(".chara");
+  if (!charas[idx]) return;
+  const el = charas[idx];
+
+  el.textContent = WHACK_CHARAS[Math.floor(Math.random() * WHACK_CHARAS.length)];
+
+  whackUpStates[idx] = true;
+  el.classList.remove("hit");
+  el.classList.add("up");
+
+  whackTimers[idx] = setTimeout(() => {
+    if (whackUpStates[idx]) {
+      whackUpStates[idx] = false;
+      el.classList.remove("up");
+      whackCombo = 0;
+      document.getElementById("whack-combo").textContent = "";
+    }
+  }, upTime);
+}
+
+function clearWhackLoop() {
+  if (whackLoop) { clearInterval(whackLoop); whackLoop = null; }
+  whackTimers.forEach(t => clearTimeout(t));
+  whackTimers = [];
+}
+
+function stopWhack() {
+  whackActive = false;
+  clearWhackLoop();
+  if (whackCountdown) { clearInterval(whackCountdown); whackCountdown = null; }
+}
+
+function endWhack() {
+  stopWhack();
+  document.querySelectorAll(".chara").forEach(el => el.classList.remove("up","hit"));
+  document.getElementById("go-score").textContent = whackScore;
+  document.getElementById("go-level").textContent = whackLevel + 1;
+  document.getElementById("whack-gameover").classList.add("show");
+  [800,600,400,300].forEach((f,i) => setTimeout(()=>playTone(f,0.3,0.2,"sine"), i*150));
+}
+
+// ===================================================
+// バルーンタップ
+// ===================================================
+const BALLOONS = ["🎈","🎀","🌸","⭐","🌟","🍭","🌈","🎊","💛","💙","❤️","💜"];
+let balloonScore = 0;
+let balloonTimer = null;
+let balloonActive = false;
+
+function startBalloon() {
+  balloonScore = 0;
+  balloonActive = true;
+  document.getElementById("balloon-score").textContent = "⭐ 0";
+  document.getElementById("balloon-stage").querySelectorAll(".balloon").forEach(b=>b.remove());
+  spawnBalloon();
+}
+
+function stopBalloon() {
+  balloonActive = false;
+  if (balloonTimer) { clearTimeout(balloonTimer); balloonTimer = null; }
+}
+
+function spawnBalloon() {
+  if (!balloonActive) return;
+  const stage = document.getElementById("balloon-stage");
+  const b = document.createElement("div");
+  b.className = "balloon";
+  const emoji = BALLOONS[Math.floor(Math.random() * BALLOONS.length)];
+  b.textContent = emoji;
+  const x = 5 + Math.random() * 80;
+  const dur = 3.5 + Math.random() * 3;
+  const rot = (Math.random() - 0.5) * 30;
+  b.style.cssText = `left:${x}vw; bottom:-15%; --dur:${dur}s; --rot:${rot}deg;`;
+
+  const pop = (e) => {
+    if (b.classList.contains("pop")) return;
+    e.stopPropagation();
+    b.classList.add("pop");
+    balloonScore++;
+    document.getElementById("balloon-score").textContent = "⭐ " + balloonScore;
+    playTone(800 + Math.random()*400, 0.4, 0.12, "sine");
+    setTimeout(() => b.remove(), 300);
+  };
+  b.addEventListener("touchstart", e => { e.preventDefault(); pop(e); }, { passive:false });
+  b.addEventListener("mousedown", pop);
+  b.addEventListener("animationend", () => b.remove());
+  stage.appendChild(b);
+  const interval = 900 + Math.random() * 600;
+  balloonTimer = setTimeout(spawnBalloon, interval);
+}
+
+// ===================================================
+// 数字タッチ
+// ===================================================
+const NUMBERS = [
+  { n:1,  label:"いち", dots:"🌟" },
+  { n:2,  label:"に",   dots:"🌟🌙" },
+  { n:3,  label:"さん", dots:"🌟🌙⭐" },
+  { n:4,  label:"し",   dots:"🌟🌙⭐🍀" },
+  { n:5,  label:"ご",   dots:"🌟🌙⭐🍀🌸" },
+  { n:6,  label:"ろく", dots:"🌟🌙⭐🍀🌸💛" },
+  { n:7,  label:"なな", dots:"🌟🌙⭐🍀🌸💛❤️" },
+  { n:8,  label:"はち", dots:"🌟🌙⭐🍀🌸💛❤️🔵" },
+  { n:9,  label:"きゅう",dots:"🌟🌙⭐🍀🌸💛❤️🔵💜" },
+  { n:10, label:"じゅう",dots:"🌟🌙⭐🍀🌸💛❤️🔵💜🟠" },
+];
+let numIdx = 0;
+
+function nextNumber(e) {
+  numIdx = (numIdx + 1) % NUMBERS.length;
+  const d = NUMBERS[numIdx];
+  const bigEl = document.getElementById("number-big");
+  bigEl.textContent = d.n;
+  bigEl.classList.remove("pop"); void bigEl.offsetWidth; bigEl.classList.add("pop");
+  document.getElementById("number-label").textContent = d.label;
+  const dotsEl = document.getElementById("number-dots");
+  dotsEl.innerHTML = "";
+  [...d.dots].forEach((ch, i) => {
+    const span = document.createElement("span");
+    span.className = "n-dot";
+    span.textContent = ch;
+    span.style.animationDelay = (i * 60) + "ms";
+    dotsEl.appendChild(span);
+  });
+  playTone(440 + d.n * 30, 0.4, 0.2, "sine");
+  speakWord(d.label);
+  spawnParticles(e);
+}
+
+function initNumber() {
+  numIdx = -1;
+  nextNumber({ clientX: null, clientY: null });
+}
+
+// ===================================================
+// 色の名前
+// ===================================================
+const COLORS = [
+  { name:"あか",   hex:"#ff3333", spoken:"あか" },
+  { name:"あお",   hex:"#3399ff", spoken:"あお" },
+  { name:"きいろ", hex:"#FFD700", spoken:"きいろ" },
+  { name:"みどり", hex:"#33cc66", spoken:"みどり" },
+  { name:"オレンジ",hex:"#ff8800", spoken:"おれんじ" },
+  { name:"むらさき",hex:"#9933cc", spoken:"むらさき" },
+  { name:"ピンク",  hex:"#ff69b4", spoken:"ぴんく" },
+  { name:"しろ",   hex:"#eeeeee", spoken:"しろ" },
+  { name:"くろ",   hex:"#333333", spoken:"くろ" },
+  { name:"みずいろ",hex:"#66ccff", spoken:"みずいろ" },
+];
+let colorIdx = 0;
+
+function nextColor(e) {
+  colorIdx = (colorIdx + 1) % COLORS.length;
+  const c = COLORS[colorIdx];
+  const circle = document.getElementById("color-circle");
+  const nameEl = document.getElementById("color-name");
+  circle.style.background = c.hex;
+  circle.style.setProperty("--c", c.hex);
+  nameEl.style.setProperty("--c", c.hex);
+  nameEl.textContent = c.name;
+  circle.classList.remove("pop"); void circle.offsetWidth; circle.classList.add("pop");
+  playTone(550, 0.4, 0.25, "sine");
+  speakWord(c.spoken);
+  document.getElementById("color-hint").style.opacity = "0";
+  spawnParticles(e);
+}
+
+function initColor() {
+  colorIdx = -1;
+  nextColor({ clientX: null, clientY: null });
+}
+
+// ===================================================
+// おえかき
+// ===================================================
+let drawCtx = null;
+let isDrawing = false;
+let drawColor = "#ff4444";
+
+function initCanvas() {
+  const canvas = document.getElementById("draw-canvas");
+  const rect   = canvas.parentElement.getBoundingClientRect();
+  const toolbar = document.getElementById("draw-toolbar");
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight - toolbar.offsetHeight - 60;
+  drawCtx = canvas.getContext("2d");
+  drawCtx.fillStyle = "#ffffff";
+  drawCtx.fillRect(0, 0, canvas.width, canvas.height);
+  drawCtx.lineCap   = "round";
+  drawCtx.lineJoin  = "round";
+
+  const getPos = e => {
+    const r = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return [t.clientX - r.left, t.clientY - r.top];
+  };
+
+  canvas.addEventListener("touchstart", e => {
+    e.preventDefault(); isDrawing = true;
+    const [x,y] = getPos(e);
+    drawCtx.beginPath(); drawCtx.moveTo(x,y);
+  }, { passive:false });
+
+  canvas.addEventListener("touchmove", e => {
+    e.preventDefault(); if (!isDrawing) return;
+    const [x,y] = getPos(e);
+    drawCtx.strokeStyle = drawColor;
+    drawCtx.lineWidth = parseInt(document.getElementById("draw-size").value);
+    drawCtx.lineTo(x,y); drawCtx.stroke();
+  }, { passive:false });
+
+  canvas.addEventListener("touchend", () => { isDrawing = false; });
+  canvas.addEventListener("mousedown", e => {
+    isDrawing = true;
+    const [x,y] = getPos(e);
+    drawCtx.beginPath(); drawCtx.moveTo(x,y);
+  });
+  canvas.addEventListener("mousemove", e => {
+    if (!isDrawing) return;
+    const [x,y] = getPos(e);
+    drawCtx.strokeStyle = drawColor;
+    drawCtx.lineWidth = parseInt(document.getElementById("draw-size").value);
+    drawCtx.lineTo(x,y); drawCtx.stroke();
+  });
+  canvas.addEventListener("mouseup",   () => { isDrawing = false; });
+  canvas.addEventListener("mouseleave",() => { isDrawing = false; });
+}
+
+function setDrawColor(el) {
+  drawColor = el.dataset.color;
+  document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("active"));
+  el.classList.add("active");
+}
+
+function clearCanvas() {
+  if (!drawCtx) return;
+  const canvas = document.getElementById("draw-canvas");
+  drawCtx.fillStyle = "#ffffff";
+  drawCtx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// ===================================================
+// ロック機能
+// ===================================================
+const LOCK_PIN = "0000";
+let isLocked   = false;
+let pinBuffer  = "";
+
+function toggleLock() {
+  if (isLocked) {
+    showLockOverlay();
+  } else {
+    isLocked = true;
+    updateLockBtns();
+    setBackBtnsDisabled(true);
+  }
+}
+
+function updateLockBtns() {
+  document.querySelectorAll(".lock-btn").forEach(b => {
+    b.textContent = isLocked ? "🔒" : "🔓";
+    b.classList.toggle("locked", isLocked);
+  });
+  document.querySelectorAll(".back-btn").forEach(b => {
+    b.style.opacity = isLocked ? "0.3" : "1";
+    b.style.pointerEvents = isLocked ? "none" : "auto";
+  });
+}
+
+function setBackBtnsDisabled(disabled) {
+  document.querySelectorAll(".back-btn").forEach(b => {
+    b.style.opacity = disabled ? "0.3" : "1";
+    b.style.pointerEvents = disabled ? "none" : "auto";
+  });
+}
+
+function showLockOverlay() {
+  pinBuffer = "";
+  updateDots();
+  document.getElementById("lock-error").textContent = "";
+  document.getElementById("lock-overlay").classList.add("show");
+}
+
+function pinInput(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updateDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(checkPin, 200);
+  }
+}
+
+function pinBackspace() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updateDots();
+  document.getElementById("lock-error").textContent = "";
+}
+
+function pinClear() {
+  pinBuffer = "";
+  updateDots();
+  document.getElementById("lock-error").textContent = "";
+}
+
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById("dot" + i).classList.toggle("filled", i < pinBuffer.length);
+  }
+}
+
+function checkPin() {
+  if (pinBuffer === LOCK_PIN) {
+    isLocked = false;
+    pinBuffer = "";
+    document.getElementById("lock-overlay").classList.remove("show");
+    updateLockBtns();
+    [400, 600, 800].forEach((f,i) => setTimeout(()=>playTone(f,0.3,0.15,"sine"), i*80));
+  } else {
+    document.getElementById("lock-error").textContent = "❌ ちがいます";
+    pinBuffer = "";
+    updateDots();
+    playTone(200, 0.4, 0.3, "sawtooth");
+    const overlay = document.getElementById("lock-overlay");
+    overlay.style.animation = "none";
+    overlay.style.transform = "translateX(-12px)";
+    setTimeout(() => { overlay.style.transition="transform 0.3s ease"; overlay.style.transform=""; }, 50);
+    setTimeout(() => { overlay.style.transition=""; }, 400);
+  }
+}
+
+// 初期化
+buildMusicGrid();
+buildPianoKeys();
+buildWhackGrid();
+
+document.addEventListener("touchstart", () => getAudio(), { once: true });
+</script>
+</body>
+</html>
