@@ -1285,6 +1285,88 @@ function spawnParticlesAt(x, y, container) {
 }
 
 // ===================================================
+// BGM（バックグラウンドミュージック）
+// ===================================================
+const BGM_PATTERNS = {
+  balloon: {
+    // きらきら星
+    wave: 'triangle',
+    gain: 0.09,
+    notes: [
+      [262,0.38],[262,0.38],[392,0.38],[392,0.38],[440,0.38],[440,0.38],[392,0.76],
+      [349,0.38],[349,0.38],[330,0.38],[330,0.38],[294,0.38],[294,0.38],[262,0.76],
+      [392,0.38],[392,0.38],[349,0.38],[349,0.38],[330,0.38],[330,0.38],[294,0.76],
+      [392,0.38],[392,0.38],[349,0.38],[349,0.38],[330,0.38],[330,0.38],[294,0.76],
+      [262,0.38],[262,0.38],[392,0.38],[392,0.38],[440,0.38],[440,0.38],[392,0.76],
+      [349,0.38],[349,0.38],[330,0.38],[330,0.38],[294,0.38],[294,0.38],[262,0.76],
+    ]
+  },
+  whack: {
+    // かえるのうた（元気なテンポで）
+    wave: 'sine',
+    gain: 0.11,
+    notes: [
+      [262,0.22],[294,0.22],[330,0.22],[262,0.22],
+      [262,0.22],[294,0.22],[330,0.22],[262,0.22],
+      [330,0.22],[349,0.22],[392,0.44],[0,0.44],
+      [330,0.22],[349,0.22],[392,0.44],[0,0.44],
+      [392,0.17],[440,0.17],[392,0.17],[349,0.17],[330,0.22],[262,0.22],
+      [392,0.17],[440,0.17],[392,0.17],[349,0.17],[330,0.22],[262,0.22],
+      [294,0.22],[0,0.22],[262,0.44],[0,0.44],
+      [294,0.22],[0,0.22],[262,0.44],[0,0.44],
+    ]
+  }
+};
+
+let bgmActive  = false;
+let bgmTimeout = null;
+let bgmPattern = null;
+let bgmNoteIdx = 0;
+let bgmNextTime = 0;
+
+function stopBgMusic() {
+  bgmActive = false;
+  if (bgmTimeout) { clearTimeout(bgmTimeout); bgmTimeout = null; }
+}
+
+function startBgMusic(type) {
+  stopBgMusic();
+  bgmPattern  = BGM_PATTERNS[type];
+  bgmNoteIdx  = 0;
+  bgmActive   = true;
+  const ctx   = getAudio();
+  bgmNextTime = ctx.currentTime + 0.15;
+  scheduleBgm();
+}
+
+function scheduleBgm() {
+  if (!bgmActive) return;
+  const ctx   = getAudio();
+  const ahead = 0.35;
+
+  while (bgmNextTime < ctx.currentTime + ahead) {
+    const [freq, dur] = bgmPattern.notes[bgmNoteIdx % bgmPattern.notes.length];
+    bgmNoteIdx++;
+
+    if (freq > 0) {
+      const osc = ctx.createOscillator();
+      const gn  = ctx.createGain();
+      osc.connect(gn); gn.connect(ctx.destination);
+      osc.type = bgmPattern.wave;
+      osc.frequency.setValueAtTime(freq, bgmNextTime);
+      gn.gain.setValueAtTime(bgmPattern.gain, bgmNextTime);
+      gn.gain.exponentialRampToValueAtTime(0.001, bgmNextTime + dur * 0.85);
+      osc.start(bgmNextTime);
+      osc.stop(bgmNextTime + dur);
+    }
+
+    bgmNextTime += dur;
+  }
+
+  bgmTimeout = setTimeout(scheduleBgm, 100);
+}
+
+// ===================================================
 // 音楽ボタン生成
 // ===================================================
 function buildMusicGrid() {
@@ -1437,6 +1519,7 @@ function showPage(id) {
 }
 function showHome() {
   stopBalloon();
+  stopBgMusic();
   document.body.classList.add("home-open");
   document.getElementById("home").style.display = "flex";
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
@@ -1675,6 +1758,7 @@ function startWhack() {
 
   buildWhackGrid();
   resumeWhackLoop();
+  startBgMusic('whack');
 
   whackCountdown = setInterval(() => {
     whackGameTime--;
@@ -1732,6 +1816,7 @@ function stopWhack() {
   whackActive = false;
   clearWhackLoop();
   if (whackCountdown) { clearInterval(whackCountdown); whackCountdown = null; }
+  stopBgMusic();
 }
 
 function endWhack() {
@@ -1756,12 +1841,14 @@ function startBalloon() {
   balloonActive = true;
   document.getElementById("balloon-score").textContent = "⭐ 0";
   document.getElementById("balloon-stage").querySelectorAll(".balloon").forEach(b=>b.remove());
+  startBgMusic('balloon');
   spawnBalloon();
 }
 
 function stopBalloon() {
   balloonActive = false;
   if (balloonTimer) { clearTimeout(balloonTimer); balloonTimer = null; }
+  stopBgMusic();
 }
 
 function spawnBalloon() {
