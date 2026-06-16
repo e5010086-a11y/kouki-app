@@ -454,11 +454,23 @@
     0%   { transform: translateY(0) rotate(var(--rot)); opacity:1; }
     100% { transform: translateY(-110vh) rotate(calc(var(--rot)*-1)); opacity:0.5; }
   }
-  .balloon.pop { animation: balloonPop 0.3s ease forwards !important; }
+  .balloon.pop { animation: balloonPop 0.18s ease-out forwards !important; pointer-events:none; }
   @keyframes balloonPop {
-    0%  { transform: scale(1); opacity:1; }
-    40% { transform: scale(1.6); opacity:1; }
-    100%{ transform: scale(0);  opacity:0; }
+    0%   { transform: scale(1);   opacity:1; }
+    35%  { transform: scale(1.7); opacity:1; }
+    100% { transform: scale(0.1); opacity:0; }
+  }
+  /* バルーン破片 */
+  .burst-piece {
+    position: fixed;
+    pointer-events: none;
+    z-index: 500;
+    border-radius: var(--br, 50%);
+    animation: burstFly var(--dur) ease-out forwards;
+  }
+  @keyframes burstFly {
+    0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity:1; }
+    100% { transform: translate(var(--bx), var(--by)) scale(0.15) rotate(var(--br2)); opacity:0; }
   }
   #balloon-score {
     position: absolute; top:12px; left:50%; transform:translateX(-50%);
@@ -1832,9 +1844,87 @@ function endWhack() {
 // バルーンタップ
 // ===================================================
 const BALLOONS = ["🎈","🎀","🌸","⭐","🌟","🍭","🌈","🎊","💛","💙","❤️","💜"];
+const BURST_COLORS = [
+  "#ff4757","#ffa502","#ffdd59","#7bed9f","#70a1ff",
+  "#ff6b81","#eccc68","#a29bfe","#fd79a8","#00d2d3"
+];
 let balloonScore = 0;
 let balloonTimer = null;
 let balloonActive = false;
+
+// バルーン破裂音
+function playBalloonPop() {
+  const ctx = getAudio();
+  const now = ctx.currentTime;
+  // 複数周波数の短いバースト → 「パン！」という音
+  [160, 320, 640, 1100, 2400].forEach((f, i) => {
+    const osc = ctx.createOscillator();
+    const gn  = ctx.createGain();
+    osc.connect(gn); gn.connect(ctx.destination);
+    osc.type = i < 2 ? "triangle" : "sawtooth";
+    osc.frequency.setValueAtTime(f, now);
+    osc.frequency.exponentialRampToValueAtTime(f * 0.04, now + 0.07);
+    gn.gain.setValueAtTime(0.28 / (i * 0.6 + 1), now);
+    gn.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    osc.start(now);
+    osc.stop(now + 0.12);
+  });
+  // 空気が抜けるシュー音
+  const hiss = ctx.createOscillator();
+  const hGn  = ctx.createGain();
+  hiss.connect(hGn); hGn.connect(ctx.destination);
+  hiss.type = "sawtooth";
+  hiss.frequency.setValueAtTime(3800, now + 0.02);
+  hiss.frequency.exponentialRampToValueAtTime(180, now + 0.22);
+  hGn.gain.setValueAtTime(0.07, now + 0.02);
+  hGn.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+  hiss.start(now + 0.02);
+  hiss.stop(now + 0.26);
+}
+
+// 破片パーティクル
+function spawnBurstParticles(cx, cy, color) {
+  const PIECE_COUNT = 14;
+  const EMOJI_SET = ["✨","⭐","🌟","💥","🎊"];
+  for (let i = 0; i < PIECE_COUNT; i++) {
+    const el = document.createElement("div");
+    el.className = "burst-piece";
+    const angle = (Math.PI * 2 / PIECE_COUNT) * i + (Math.random() - 0.5) * 0.8;
+    const dist  = 55 + Math.random() * 90;
+    const size  = 9 + Math.random() * 13;
+    const dur   = 0.38 + Math.random() * 0.28;
+    const isCircle = Math.random() > 0.4;
+    // 使う色は渡された色 or ランダムカラー
+    const c = Math.random() > 0.3 ? color : BURST_COLORS[Math.floor(Math.random()*BURST_COLORS.length)];
+    el.style.cssText = `
+      left:${cx}px; top:${cy}px;
+      width:${size}px; height:${size}px;
+      background:${c};
+      --bx:${Math.cos(angle)*dist}px;
+      --by:${Math.sin(angle)*dist}px;
+      --dur:${dur}s;
+      --br:${isCircle ? "50%" : "3px"};
+      --br2:${(Math.random()-0.5)*360}deg;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), (dur + 0.05) * 1000);
+  }
+  // 絵文字パーティクルも数個
+  for (let i = 0; i < 5; i++) {
+    const el = document.createElement("div");
+    el.style.cssText = `
+      position:fixed; left:${cx}px; top:${cy}px;
+      font-size:${18 + Math.random()*14}px;
+      pointer-events:none; z-index:501;
+      animation: fly ${0.5 + Math.random()*0.3}s ease-out forwards;
+      --tx:${(Math.random()-0.5)*140}px;
+      --ty:${-60 - Math.random()*80}px;
+    `;
+    el.textContent = EMOJI_SET[Math.floor(Math.random()*EMOJI_SET.length)];
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+}
 
 function startBalloon() {
   balloonScore = 0;
@@ -1858,9 +1948,11 @@ function spawnBalloon() {
   b.className = "balloon";
   const emoji = BALLOONS[Math.floor(Math.random() * BALLOONS.length)];
   b.textContent = emoji;
-  const x = 5 + Math.random() * 80;
+  const x   = 5 + Math.random() * 80;
   const dur = 3.5 + Math.random() * 3;
   const rot = (Math.random() - 0.5) * 30;
+  // バルーンごとにランダムな色を割り当て
+  const burstColor = BURST_COLORS[Math.floor(Math.random() * BURST_COLORS.length)];
   b.style.cssText = `left:${x}vw; bottom:-15%; --dur:${dur}s; --rot:${rot}deg;`;
 
   const pop = (e) => {
@@ -1869,12 +1961,19 @@ function spawnBalloon() {
     b.classList.add("pop");
     balloonScore++;
     document.getElementById("balloon-score").textContent = "⭐ " + balloonScore;
-    playTone(800 + Math.random()*400, 0.4, 0.12, "sine");
-    setTimeout(() => b.remove(), 300);
+
+    // バルーン中心座標を取得してエフェクト発火
+    const rect = b.getBoundingClientRect();
+    const cx = rect.left + rect.width  / 2;
+    const cy = rect.top  + rect.height / 2;
+    playBalloonPop();
+    spawnBurstParticles(cx, cy, burstColor);
+
+    setTimeout(() => b.remove(), 200);
   };
   b.addEventListener("touchstart", e => { e.preventDefault(); pop(e); }, { passive:false });
   b.addEventListener("mousedown", pop);
-  b.addEventListener("animationend", () => b.remove());
+  b.addEventListener("animationend", () => { if (!b.classList.contains("pop")) b.remove(); });
 
   stage.appendChild(b);
 
