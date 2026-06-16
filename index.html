@@ -12,7 +12,6 @@
     min-height: 100vh;
     overflow: hidden;
     -webkit-touch-callout: none;
-    -webkit-user-select: none;
     user-select: none;
   }
   body.home-open {
@@ -57,13 +56,9 @@
     font-size: clamp(22px, 6vw, 34px);
     font-weight: bold;
     cursor: pointer;
-    -webkit-appearance: none;
-    appearance: none;
     box-shadow: 0 8px 0 rgba(0,0,0,0.15);
     transition: transform 0.1s, box-shadow 0.1s;
     letter-spacing: 2px;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
   }
   .mode-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 rgba(0,0,0,0.15); }
 
@@ -584,14 +579,14 @@
 <div id="home">
   <h1>🚀 こうきくんの<br>あそびば！</h1>
   <div id="home-subtitle">⚡ LET'S PLAY ⚡</div>
-  <button class="mode-btn" id="btn-tap"     data-page="tap-page">🐸 タップであそぶ</button>
-  <button class="mode-btn" id="btn-music"   data-page="music-page">🎵 おんがくであそぶ</button>
-  <button class="mode-btn" id="btn-piano"   data-page="piano-page">🎹 ピアノをひく</button>
-  <button class="mode-btn" id="btn-whack"   data-page="whack-page">🔨 もぐらたたき</button>
-  <button class="mode-btn" id="btn-balloon" data-page="balloon-page">🎈 バルーンタップ</button>
-  <button class="mode-btn" id="btn-number"  data-page="number-page">🔢 かずをおぼえよう</button>
-  <button class="mode-btn" id="btn-color"   data-page="color-page">🌈 いろのなまえ</button>
-  <button class="mode-btn" id="btn-draw"    data-page="draw-page">🎨 おえかき</button>
+  <button class="mode-btn" id="btn-tap"     ontouchstart="showPage('tap-page')" onclick="showPage('tap-page')">🐸 タップであそぶ</button>
+  <button class="mode-btn" id="btn-music"   ontouchstart="showPage('music-page')" onclick="showPage('music-page')">🎵 おんがくであそぶ</button>
+  <button class="mode-btn" id="btn-piano"   ontouchstart="showPage('piano-page')" onclick="showPage('piano-page')">🎹 ピアノをひく</button>
+  <button class="mode-btn" id="btn-whack"   ontouchstart="showPage('whack-page')" onclick="showPage('whack-page')">🔨 もぐらたたき</button>
+  <button class="mode-btn" id="btn-balloon" ontouchstart="showPage('balloon-page')" onclick="showPage('balloon-page')">🎈 バルーンタップ</button>
+  <button class="mode-btn" id="btn-number"  ontouchstart="showPage('number-page')" onclick="showPage('number-page')">🔢 かずをおぼえよう</button>
+  <button class="mode-btn" id="btn-color"   ontouchstart="showPage('color-page')" onclick="showPage('color-page')">🌈 いろのなまえ</button>
+  <button class="mode-btn" id="btn-draw"    ontouchstart="showPage('draw-page')" onclick="showPage('draw-page')">🎨 おえかき</button>
 </div>
 
 <!-- ロックオーバーレイ -->
