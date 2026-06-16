@@ -1989,24 +1989,30 @@ function spawnBalloon() {
   b.style.cssText = `left:${x}vw; bottom:-15%; --dur:${dur}s; --rot:${rot}deg;`;
 
   const pop = (e) => {
-    if (b.classList.contains("pop")) return;
+    if (b.dataset.popped) return;
+    b.dataset.popped = "1";
     e.stopPropagation();
-    b.classList.add("pop");
-    balloonScore++;
-    document.getElementById("balloon-score").textContent = "⭐ " + balloonScore;
 
-    // バルーン中心座標を取得してエフェクト発火
+    // ① アニメ切替前に現在位置を取得（これより前に DOM を触らない）
     const rect = b.getBoundingClientRect();
     const cx = rect.left + rect.width  / 2;
     const cy = rect.top  + rect.height / 2;
+
+    // ② バルーンはその場で即消す（animationを切り替えると底に戻るため使わない）
+    b.style.opacity = "0";
+    b.style.pointerEvents = "none";
+
+    // ③ スコア更新・エフェクト
+    balloonScore++;
+    document.getElementById("balloon-score").textContent = "⭐ " + balloonScore;
     playBalloonPop();
     spawnBurstParticles(cx, cy, burstColor);
 
-    setTimeout(() => b.remove(), 200);
+    setTimeout(() => b.remove(), 800);
   };
   b.addEventListener("touchstart", e => { e.preventDefault(); pop(e); }, { passive:false });
   b.addEventListener("mousedown", pop);
-  b.addEventListener("animationend", () => { if (!b.classList.contains("pop")) b.remove(); });
+  b.addEventListener("animationend", () => { if (!b.dataset.popped) b.remove(); });
 
   stage.appendChild(b);
 
