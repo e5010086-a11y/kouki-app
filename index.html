@@ -916,7 +916,7 @@
     <span class="page-title">💬 はじめてのことば！</span>
     <button class="lock-btn" onclick="toggleLock()">🔓</button>
   </div>
-  <div id="word-stage" onclick="nextWord(event)">
+  <div id="word-stage">
     <div id="word-icon"></div>
     <div id="word-big">ママ</div>
     <div id="word-stars">⭐⭐⭐</div>
@@ -1466,11 +1466,15 @@ function nextWord(e) {
   wordIdx = (wordIdx + 1) % WORDS.length;
   const w = WORDS[wordIdx];
 
+  // ① 読み上げを最初に呼ぶ（iOS: AudioContext 起動前に speak しないと競合する）
+  speakWord(w.word);
+
+  // ② 表示更新
   const stage = document.getElementById("word-stage");
   const iconEl = document.getElementById("word-icon");
-  const bigEl = document.getElementById("word-big");
+  const bigEl  = document.getElementById("word-big");
   const starsEl = document.getElementById("word-stars");
-  const hintEl = document.getElementById("word-hint");
+  const hintEl  = document.getElementById("word-hint");
 
   stage.style.background = w.bg;
 
@@ -1482,18 +1486,18 @@ function nextWord(e) {
   bigEl.classList.remove("pop");
   requestAnimationFrame(() => bigEl.classList.add("pop"));
 
-  // ランダムな星の演出
   const starSet = ["⭐","🌟","✨","💫","🌈","🎵","❤️","🎉"];
-  const stars = Array.from({length: 3}, () => starSet[Math.floor(Math.random()*starSet.length)]);
+  const stars = Array.from({length:3}, () => starSet[Math.floor(Math.random()*starSet.length)]);
   starsEl.textContent = stars.join(" ");
   starsEl.style.animation = "none"; void starsEl.offsetWidth; starsEl.style.animation = "";
 
   hintEl.style.opacity = "0";
 
-  // 音 + 読み上げ
-  playTone(523, 0.3, 0.15, "sine");
-  playTone(659, 0.3, 0.15, "sine", 0);
-  setTimeout(() => speakWord(w.word), 200);
+  // ③ 効果音は少し遅らせる（読み上げと AudioContext の競合を避ける）
+  setTimeout(() => {
+    playTone(523, 0.3, 0.15, "sine");
+    playTone(659, 0.3, 0.15, "sine", 0);
+  }, 350);
 
   if (e) {
     const touch = e.touches ? e.touches[0] : e;
@@ -1504,11 +1508,28 @@ function nextWord(e) {
 
 function initWord() {
   wordIdx = -1;
-  document.getElementById("word-stage").style.background = "#1a1a2e";
+  const stage = document.getElementById("word-stage");
+  stage.style.background = "#1a1a2e";
   document.getElementById("word-icon").textContent = "";
   document.getElementById("word-big").textContent = "👆";
   document.getElementById("word-stars").textContent = "⭐⭐⭐";
   document.getElementById("word-hint").style.opacity = "1";
+
+  // iOS Safari 向け touchstart リスナー（click より早く、speak が確実に動く）
+  if (!stage._wordTouchBound) {
+    stage._wordTouchBound = true;
+    let lastT = 0;
+    stage.addEventListener("touchstart", e => {
+      e.preventDefault();
+      lastT = Date.now();
+      nextWord(e);
+    }, { passive: false });
+    // click は touchstart が来なかった場合（マウス操作）のみ動作させる
+    stage.addEventListener("click", e => {
+      if (Date.now() - lastT < 600) return;
+      nextWord(e);
+    });
+  }
 }
 
 // ===================================================
