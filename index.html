@@ -1235,34 +1235,17 @@ function speakWord(word) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
 
-  const doSpeak = () => {
-    const utter = new SpeechSynthesisUtterance(word);
-    utter.lang  = "ja-JP";
-    utter.rate  = 0.85;   // ゆっくり明瞭
-    utter.pitch = 1.0;    // フラット＝アナウンサー調
-    utter.volume = 1.0;
-    const voice = pickVoice();
-    if (voice) utter.voice = voice;
-    window.speechSynthesis.speak(utter);
-  };
+  // jaVoices が未ロードなら再取得（初回のみ起こりうる）
+  if (!jaVoices.length) loadVoices();
 
-  // iOS は cancel() 直後に speak() すると無視されるため 100ms 待つ
-  setTimeout(() => {
-    if (jaVoices.length) {
-      doSpeak();
-    } else {
-      loadVoices();
-      if (jaVoices.length) {
-        doSpeak();
-      } else {
-        window.speechSynthesis.onvoiceschanged = () => {
-          loadVoices(); doSpeak();
-          window.speechSynthesis.onvoiceschanged = null;
-        };
-        setTimeout(doSpeak, 500);
-      }
-    }
-  }, 100);
+  const utter = new SpeechSynthesisUtterance(word);
+  utter.lang   = "ja-JP";
+  utter.rate   = 0.85;   // ゆっくり明瞭
+  utter.pitch  = 1.0;    // フラット＝アナウンサー調
+  utter.volume = 1.0;
+  const voice = pickVoice();
+  if (voice) utter.voice = voice;
+  window.speechSynthesis.speak(utter);
 }
 
 function spawnParticles(e) {
