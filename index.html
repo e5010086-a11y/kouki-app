@@ -641,9 +641,9 @@
   #word-icon {
     font-size: clamp(72px, 20vw, 140px);
     line-height: 1;
-    animation: wordPop 0.38s ease;
     min-height: clamp(72px, 20vw, 140px);
   }
+  #word-icon.pop { animation: wordPop 0.38s ease; }
   #word-big {
     font-size: clamp(52px, 15vw, 108px);
     font-weight: 900;
@@ -1222,9 +1222,10 @@ if ('speechSynthesis' in window) {
 
 function pickVoice() {
   if (!jaVoices.length) return null;
-  const prefer = ["O-ren","Kyoko","Otoya","Hattori","Google 日本語","Microsoft Haruka"];
+  // 女性アナウンサー優先 → 男性 → その他日本語
+  const prefer = ["Kyoko","O-Ren","O-ren","Google 日本語","Microsoft Haruka","Hattori","Otoya"];
   for (const name of prefer) {
-    const v = jaVoices.find(v => v.name.includes(name));
+    const v = jaVoices.find(v => v.name.toLowerCase().includes(name.toLowerCase()));
     if (v) return v;
   }
   return jaVoices[0];
@@ -1236,21 +1237,32 @@ function speakWord(word) {
 
   const doSpeak = () => {
     const utter = new SpeechSynthesisUtterance(word);
-    utter.lang = "ja-JP";
-    utter.rate = 0.72;
-    utter.pitch = 1.3;
+    utter.lang  = "ja-JP";
+    utter.rate  = 0.85;   // ゆっくり明瞭
+    utter.pitch = 1.0;    // フラット＝アナウンサー調
+    utter.volume = 1.0;
     const voice = pickVoice();
     if (voice) utter.voice = voice;
     window.speechSynthesis.speak(utter);
   };
 
-  if (jaVoices.length) {
-    doSpeak();
-  } else {
-    const handler = () => { loadVoices(); doSpeak(); window.speechSynthesis.onvoiceschanged = null; };
-    window.speechSynthesis.onvoiceschanged = handler;
-    setTimeout(doSpeak, 300);
-  }
+  // iOS は cancel() 直後に speak() すると無視されるため 100ms 待つ
+  setTimeout(() => {
+    if (jaVoices.length) {
+      doSpeak();
+    } else {
+      loadVoices();
+      if (jaVoices.length) {
+        doSpeak();
+      } else {
+        window.speechSynthesis.onvoiceschanged = () => {
+          loadVoices(); doSpeak();
+          window.speechSynthesis.onvoiceschanged = null;
+        };
+        setTimeout(doSpeak, 500);
+      }
+    }
+  }, 100);
 }
 
 function spawnParticles(e) {
@@ -1480,10 +1492,12 @@ function nextWord(e) {
   stage.style.background = w.bg;
 
   iconEl.textContent = w.icon || "";
-  iconEl.classList.remove("pop"); void iconEl.offsetWidth; iconEl.classList.add("pop");
+  iconEl.classList.remove("pop");
+  requestAnimationFrame(() => iconEl.classList.add("pop"));
 
   bigEl.textContent = w.word;
-  bigEl.classList.remove("pop"); void bigEl.offsetWidth; bigEl.classList.add("pop");
+  bigEl.classList.remove("pop");
+  requestAnimationFrame(() => bigEl.classList.add("pop"));
 
   // ランダムな星の演出
   const starSet = ["⭐","🌟","✨","💫","🌈","🎵","❤️","🎉"];
