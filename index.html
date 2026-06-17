@@ -638,6 +638,12 @@
     overflow: hidden;
     transition: background 0.5s;
   }
+  #word-icon {
+    font-size: clamp(72px, 20vw, 140px);
+    line-height: 1;
+    animation: wordPop 0.38s ease;
+    min-height: clamp(72px, 20vw, 140px);
+  }
   #word-big {
     font-size: clamp(52px, 15vw, 108px);
     font-weight: 900;
@@ -911,6 +917,7 @@
     <button class="lock-btn" onclick="toggleLock()">🔓</button>
   </div>
   <div id="word-stage" onclick="nextWord(event)">
+    <div id="word-icon"></div>
     <div id="word-big">ママ</div>
     <div id="word-stars">⭐⭐⭐</div>
     <div id="word-hint">👆 タップしてね</div>
@@ -993,23 +1000,23 @@ const FOODS = [
 
 // ===== はじめてのことばデータ =====
 const WORDS = [
-  { word:"ママ",         bg:"#c0392b" },
-  { word:"パパ",         bg:"#2980b9" },
-  { word:"おばあちゃん", bg:"#6a1b9a" },
-  { word:"おじいちゃん", bg:"#5d4037" },
-  { word:"まんま",       bg:"#e67e22" },
-  { word:"ねんね",       bg:"#8e44ad" },
-  { word:"わんわん",     bg:"#d35400" },
-  { word:"にゃんにゃん", bg:"#c0392b" },
-  { word:"ぶーぶー",     bg:"#7f8c8d" },
-  { word:"ばいばい",     bg:"#27ae60" },
-  { word:"だっこ",       bg:"#e91e63" },
-  { word:"あんよ",       bg:"#1565c0" },
-  { word:"おいしい",     bg:"#e65100" },
-  { word:"かわいい",     bg:"#ad1457" },
-  { word:"すきすき",     bg:"#c62828" },
-  { word:"おはよう",     bg:"#f57f17" },
-  { word:"ありがとう",   bg:"#2e7d32" },
+  { word:"ママ",         icon:"👩",  bg:"#c0392b" },
+  { word:"パパ",         icon:"👨",  bg:"#2980b9" },
+  { word:"おばあちゃん", icon:"👵",  bg:"#6a1b9a" },
+  { word:"おじいちゃん", icon:"👴",  bg:"#5d4037" },
+  { word:"まんま",       icon:"🍚",  bg:"#e67e22" },
+  { word:"ねんね",       icon:"😴",  bg:"#8e44ad" },
+  { word:"わんわん",     icon:"🐶",  bg:"#d35400" },
+  { word:"にゃんにゃん", icon:"🐱",  bg:"#c0392b" },
+  { word:"ぶーぶー",     icon:"🚗",  bg:"#7f8c8d" },
+  { word:"ばいばい",     icon:"👋",  bg:"#27ae60" },
+  { word:"だっこ",       icon:"🤗",  bg:"#e91e63" },
+  { word:"あんよ",       icon:"👣",  bg:"#1565c0" },
+  { word:"おいしい",     icon:"😋",  bg:"#e65100" },
+  { word:"かわいい",     icon:"💕",  bg:"#ad1457" },
+  { word:"すきすき",     icon:"❤️",  bg:"#c62828" },
+  { word:"おはよう",     icon:"🌅",  bg:"#f57f17" },
+  { word:"ありがとう",   icon:"🙏",  bg:"#2e7d32" },
 ];
 
 // ===================================================
@@ -1465,11 +1472,15 @@ function nextWord(e) {
   const w = WORDS[wordIdx];
 
   const stage = document.getElementById("word-stage");
+  const iconEl = document.getElementById("word-icon");
   const bigEl = document.getElementById("word-big");
   const starsEl = document.getElementById("word-stars");
   const hintEl = document.getElementById("word-hint");
 
   stage.style.background = w.bg;
+
+  iconEl.textContent = w.icon || "";
+  iconEl.classList.remove("pop"); void iconEl.offsetWidth; iconEl.classList.add("pop");
 
   bigEl.textContent = w.word;
   bigEl.classList.remove("pop"); void bigEl.offsetWidth; bigEl.classList.add("pop");
@@ -1497,6 +1508,7 @@ function nextWord(e) {
 function initWord() {
   wordIdx = -1;
   document.getElementById("word-stage").style.background = "#1a1a2e";
+  document.getElementById("word-icon").textContent = "";
   document.getElementById("word-big").textContent = "👆";
   document.getElementById("word-stars").textContent = "⭐⭐⭐";
   document.getElementById("word-hint").style.opacity = "1";
