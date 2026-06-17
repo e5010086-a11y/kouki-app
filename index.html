@@ -916,7 +916,7 @@
     <span class="page-title">💬 はじめてのことば！</span>
     <button class="lock-btn" onclick="toggleLock()">🔓</button>
   </div>
-  <div id="word-stage">
+  <div id="word-stage" onclick="nextWord(event)">
     <div id="word-icon"></div>
     <div id="word-big">ママ</div>
     <div id="word-stars">⭐⭐⭐</div>
@@ -1230,14 +1230,11 @@ function pickVoice() {
   return jaVoices[0];
 }
 
-// iOS Safari 対応の読み上げ関数
-// ・touchstart ハンドラから直接呼ばれること（setTimeout 経由は使わない）
-// ・cancel() → 即 speak() が最も信頼できるパターン
 function speakWord(word) {
-  if (!window.speechSynthesis) return;
-  try {
-    if (!jaVoices.length) loadVoices();
-    window.speechSynthesis.cancel();
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+
+  const doSpeak = () => {
     const u = new SpeechSynthesisUtterance(word);
     u.lang   = "ja-JP";
     u.rate   = 0.85;
@@ -1246,7 +1243,16 @@ function speakWord(word) {
     const v = pickVoice();
     if (v) u.voice = v;
     window.speechSynthesis.speak(u);
-  } catch(e) { console.error("speak:", e); }
+  };
+
+  if (jaVoices.length) {
+    doSpeak();
+  } else {
+    // 音声リストが未取得の場合は取得後に再試行
+    const handler = () => { loadVoices(); doSpeak(); window.speechSynthesis.onvoiceschanged = null; };
+    window.speechSynthesis.onvoiceschanged = handler;
+    setTimeout(doSpeak, 300);
+  }
 }
 
 function spawnParticles(e) {
@@ -1467,13 +1473,9 @@ function nextWord(e) {
   wordIdx = (wordIdx + 1) % WORDS.length;
   const w = WORDS[wordIdx];
 
-  // ① 読み上げを最初に呼ぶ（iOS: AudioContext 起動前に speak しないと競合する）
-  speakWord(w.word);
-
-  // ② 表示更新
-  const stage = document.getElementById("word-stage");
-  const iconEl = document.getElementById("word-icon");
-  const bigEl  = document.getElementById("word-big");
+  const stage   = document.getElementById("word-stage");
+  const iconEl  = document.getElementById("word-icon");
+  const bigEl   = document.getElementById("word-big");
   const starsEl = document.getElementById("word-stars");
   const hintEl  = document.getElementById("word-hint");
 
@@ -1495,11 +1497,10 @@ function nextWord(e) {
 
   hintEl.style.opacity = "0";
 
-  // ③ 効果音は少し遅らせる（読み上げと AudioContext の競合を避ける）
-  setTimeout(() => {
-    playTone(523, 0.3, 0.15, "sine");
-    playTone(659, 0.3, 0.15, "sine", 0);
-  }, 350);
+  // 効果音 → 少し後に読み上げ（元の動作パターンに戻す）
+  playTone(523, 0.3, 0.15, "sine");
+  playTone(659, 0.3, 0.15, "sine", 0);
+  setTimeout(() => speakWord(w.word), 200);
 
   if (e) {
     const touch = e.touches ? e.touches[0] : e;
@@ -1510,28 +1511,11 @@ function nextWord(e) {
 
 function initWord() {
   wordIdx = -1;
-  const stage = document.getElementById("word-stage");
-  stage.style.background = "#1a1a2e";
+  document.getElementById("word-stage").style.background = "#1a1a2e";
   document.getElementById("word-icon").textContent = "";
   document.getElementById("word-big").textContent = "👆";
   document.getElementById("word-stars").textContent = "⭐⭐⭐";
   document.getElementById("word-hint").style.opacity = "1";
-
-  // iOS Safari 向け touchstart リスナー（click より早く、speak が確実に動く）
-  if (!stage._wordTouchBound) {
-    stage._wordTouchBound = true;
-    let lastT = 0;
-    stage.addEventListener("touchstart", e => {
-      e.preventDefault();
-      lastT = Date.now();
-      nextWord(e);
-    }, { passive: false });
-    // click は touchstart が来なかった場合（マウス操作）のみ動作させる
-    stage.addEventListener("click", e => {
-      if (Date.now() - lastT < 600) return;
-      nextWord(e);
-    });
-  }
 }
 
 // ===================================================
