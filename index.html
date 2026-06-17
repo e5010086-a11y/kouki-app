@@ -1523,6 +1523,8 @@ function showPage(id) {
     setTimeout(initCanvas, 50);
   } else if (id === "word-page") {
     initWord();
+  } else if (id === "piano-page") {
+    setTimeout(buildPianoKeys, 50);
   }
 }
 function showHome() {
@@ -1574,32 +1576,30 @@ function buildPianoKeys() {
   const wrap = document.getElementById("piano-keys");
   wrap.innerHTML = "";
 
-  const vw    = window.innerWidth;
-  const WN    = WHITE_KEYS.length; // 8
-  const gap   = 6;
-  const wKeyW = Math.floor((vw - 24 - gap * (WN - 1)) / WN);
-  const wKeyH = Math.min(Math.floor(wKeyW * 3.2), 240);
+  // flex で横並びにする（absolute 廃止）
+  wrap.style.cssText = `
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    width: 100%;
+    height: clamp(140px, 40vw, 250px);
+    position: static;
+  `;
 
-  const totalW = WN * wKeyW + (WN - 1) * gap;
-  wrap.style.width  = totalW + "px";
-  wrap.style.height = wKeyH + "px";
-
-  // 白鍵のみ（黒鍵を除去することで重なりをなくす）
-  WHITE_KEYS.forEach((k, i) => {
+  WHITE_KEYS.forEach(k => {
     const btn = document.createElement("button");
     btn.className = "p-white";
-    const left = i * (wKeyW + gap);
     btn.style.cssText = `
-      width:${wKeyW}px; height:${wKeyH}px;
-      background:${k.color};
-      position:absolute; left:${left}px; top:0;
+      flex: 1;
+      height: 100%;
+      background: ${k.color};
+      position: static;
+      min-width: 0;
       border-radius: 0 0 16px 16px;
     `;
-    const emojiSize = Math.max(Math.round(wKeyW * 0.58), 22);
-    const lblSize   = Math.max(Math.round(wKeyW * 0.30), 11);
     btn.innerHTML = `
-      <span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>
-      <span class="key-label" style="font-size:${lblSize}px;color:#666">${k.note}</span>
+      <span class="key-emoji" style="font-size:clamp(18px,5vw,34px)">${k.emoji}</span>
+      <span class="key-label" style="font-size:clamp(9px,2.5vw,13px);color:#666">${k.note}</span>
     `;
     const play = () => {
       playPianoKey(k.freq);
