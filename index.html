@@ -1022,7 +1022,8 @@ const WORDS = [
 // ===================================================
 // Web Audio
 // ===================================================
-let audioCtx = null;
+let audioCtx  = null;
+let jaVoices  = [];
 function getAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -1209,16 +1210,46 @@ function nextItem(e) {
   tryPraise();
 }
 
-// 読み上げ（iOS は voice 指定をせず lang だけ渡すのが最も確実）
+function loadVoices() {
+  if (!('speechSynthesis' in window)) return;
+  const all = window.speechSynthesis.getVoices();
+  jaVoices = all.filter(v => v.lang && v.lang.startsWith("ja"));
+}
+
+function pickVoice() {
+  if (!jaVoices.length) return null;
+  const pref = jaVoices.find(v => /Kyoko|Siri|Japanese/i.test(v.name));
+  return pref || jaVoices[0];
+}
+
 function speakWord(word) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang   = "ja-JP";
-  u.rate   = 0.85;
-  u.pitch  = 1.0;
-  u.volume = 1.0;
-  window.speechSynthesis.speak(u);
+  const doSpeak = () => {
+    const utter = new SpeechSynthesisUtterance(word);
+    utter.lang   = "ja-JP";
+    utter.rate   = 0.72;
+    utter.pitch  = 1.3;
+    utter.volume = 1.0;
+    const voice = pickVoice();
+    if (voice) utter.voice = voice;
+    window.speechSynthesis.speak(utter);
+  };
+  if (jaVoices.length) {
+    doSpeak();
+  } else {
+    loadVoices();
+    if (jaVoices.length) {
+      doSpeak();
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => {
+        loadVoices();
+        doSpeak();
+        window.speechSynthesis.onvoiceschanged = null;
+      };
+      setTimeout(doSpeak, 250);
+    }
+  }
 }
 
 function spawnParticles(e) {
@@ -2287,6 +2318,10 @@ document.querySelectorAll(".mode-btn[data-page]").forEach(btn => {
 });
 
 document.addEventListener("touchstart", () => getAudio(), { once: true });
+if ('speechSynthesis' in window) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
 </script>
 </body>
 </html>
