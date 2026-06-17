@@ -1574,18 +1574,17 @@ function buildPianoKeys() {
   const wrap = document.getElementById("piano-keys");
   wrap.innerHTML = "";
 
-  const vw = window.innerWidth;
-  const WN = WHITE_KEYS.length;
-  const gap = 3;
-  const wKeyW = Math.min(Math.floor((vw - 32 - gap*(WN-1)) / WN), 68);
-  const wKeyH = Math.min(wKeyW * 3.0, 200);
-  const bKeyW = Math.round(wKeyW * 0.62);
-  const bKeyH = Math.round(wKeyH * 0.62);
+  const vw    = window.innerWidth;
+  const WN    = WHITE_KEYS.length; // 8
+  const gap   = 6;
+  const wKeyW = Math.floor((vw - 24 - gap * (WN - 1)) / WN);
+  const wKeyH = Math.min(Math.floor(wKeyW * 3.2), 240);
 
-  const totalW = WN * wKeyW + (WN-1) * gap;
+  const totalW = WN * wKeyW + (WN - 1) * gap;
   wrap.style.width  = totalW + "px";
   wrap.style.height = wKeyH + "px";
 
+  // 白鍵のみ（黒鍵を除去することで重なりをなくす）
   WHITE_KEYS.forEach((k, i) => {
     const btn = document.createElement("button");
     btn.className = "p-white";
@@ -1594,33 +1593,14 @@ function buildPianoKeys() {
       width:${wKeyW}px; height:${wKeyH}px;
       background:${k.color};
       position:absolute; left:${left}px; top:0;
+      border-radius: 0 0 16px 16px;
     `;
-    const emojiSize = Math.max(Math.round(wKeyW * 0.45), 18);
-    btn.innerHTML = `<span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>
-                     <span class="key-label">${k.note}</span>`;
-    const play = () => {
-      playPianoKey(k.freq);
-      document.getElementById("piano-note-display").textContent = k.emoji + " " + k.note;
-      btn.classList.add("pressed");
-      setTimeout(() => btn.classList.remove("pressed"), 200);
-    };
-    btn.addEventListener("touchstart", e => { e.preventDefault(); play(); }, { passive: false });
-    btn.addEventListener("mousedown",  e => { e.preventDefault(); play(); });
-    wrap.appendChild(btn);
-  });
-
-  BLACK_KEYS.forEach(k => {
-    const btn = document.createElement("button");
-    btn.className = "p-black";
-    const center = (k.after + 1) * (wKeyW + gap) - gap/2;
-    const left   = Math.round(center - bKeyW / 2);
-    btn.style.cssText = `
-      width:${bKeyW}px; height:${bKeyH}px;
-      left:${left}px; top:0;
+    const emojiSize = Math.max(Math.round(wKeyW * 0.58), 22);
+    const lblSize   = Math.max(Math.round(wKeyW * 0.30), 11);
+    btn.innerHTML = `
+      <span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>
+      <span class="key-label" style="font-size:${lblSize}px;color:#666">${k.note}</span>
     `;
-    const emojiSize = Math.max(Math.round(bKeyW * 0.45), 14);
-    btn.innerHTML = `<span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>
-                     <span class="key-label" style="color:#aaa">${k.note}</span>`;
     const play = () => {
       playPianoKey(k.freq);
       document.getElementById("piano-note-display").textContent = k.emoji + " " + k.note;
