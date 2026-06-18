@@ -687,6 +687,53 @@
   }
   #color-hint { font-size:clamp(16px,4vw,22px); color:#aaa; letter-spacing:2px; }
 
+  /* ===== はじめてのことば ===== */
+  #words-page { background: #fff; }
+  #words-stage {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:26px; padding:24px; cursor:pointer; position:relative; overflow:hidden;
+    transition: background 0.4s;
+    background: radial-gradient(circle at 50% 38%, var(--wbg1,#ffe29a) 0%, var(--wbg2,#ff8fb1) 100%);
+  }
+  /* 光る額縁つきイラストカード */
+  #words-card {
+    position:relative;
+    width:min(70vw,330px); height:min(70vw,330px);
+    border-radius:40px;
+    background: rgba(255,255,255,0.94);
+    box-shadow:0 18px 40px rgba(0,0,0,0.22), inset 0 2px 12px rgba(255,255,255,0.9);
+    display:flex; align-items:center; justify-content:center;
+    border:6px solid rgba(255,255,255,0.9);
+  }
+  #words-card::before {
+    content:""; position:absolute; inset:-14px;
+    border-radius:52px; z-index:-1;
+    background: conic-gradient(from 0deg, #ffd700,#ff8fb1,#8fd3ff,#b8f5a6,#dcb0ff,#ffd700);
+    filter: blur(9px); opacity:0.75;
+    animation: wordsHalo 6s linear infinite;
+  }
+  @keyframes wordsHalo { to { transform: rotate(360deg); } }
+  #words-emoji {
+    font-size: clamp(120px, 38vw, 230px);
+    line-height:1;
+    filter: drop-shadow(0 8px 10px rgba(0,0,0,0.2));
+  }
+  #words-emoji.pop { animation: numPop 0.4s ease; }
+  #words-label {
+    font-size: clamp(40px, 12vw, 80px);
+    font-weight:900; color:#fff;
+    -webkit-text-stroke: 3px #ff5fa2;
+    text-shadow: 0 4px 0 rgba(0,0,0,0.15);
+    letter-spacing:2px; text-align:center;
+    max-width:94vw; line-height:1.15;
+  }
+  #words-hint {
+    font-size:clamp(16px,4vw,22px);
+    color:rgba(255,255,255,0.95); font-weight:bold; letter-spacing:2px;
+    text-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+
   /* ===== おえかき ===== */
   #draw-page { background: #f8f8f8; }
   #draw-toolbar {
@@ -723,6 +770,7 @@
   #btn-music   { background: linear-gradient(135deg,#4fc3f7,#81d4fa); color: white; }
   #btn-piano   { background: linear-gradient(135deg,#66bb6a,#a5d6a7); color: white; }
   #btn-whack   { background: linear-gradient(135deg,#ffa726,#ffcc80); color: white; }
+  #btn-words   { background: linear-gradient(135deg,#f78ca0,#f9748f); color: white; }
 </style>
 </head>
 <body class="home-open">
@@ -738,6 +786,7 @@
   <button class="mode-btn" id="btn-balloon" data-page="balloon-page">🎈 バルーンタップ</button>
   <button class="mode-btn" id="btn-number"  data-page="number-page">🔢 かずをおぼえよう</button>
   <button class="mode-btn" id="btn-color"   data-page="color-page">🌈 いろのなまえ</button>
+  <button class="mode-btn" id="btn-words"   data-page="words-page">💬 はじめてのことば</button>
   <button class="mode-btn" id="btn-draw"    data-page="draw-page">🎨 おえかき</button>
 </div>
 
@@ -893,6 +942,22 @@
     <div id="color-circle"></div>
     <div id="color-name">あか</div>
     <div id="color-hint">👆 タップしてね</div>
+  </div>
+</div>
+
+<!-- はじめてのことばページ -->
+<div id="words-page" class="page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">⬅️</button>
+    <span class="page-title">💬 はじめてのことば！</span>
+    <button class="lock-btn" onclick="toggleLock()">🔓</button>
+  </div>
+  <div id="words-stage" onclick="nextWord(event)">
+    <div id="words-card">
+      <div id="words-emoji">👨</div>
+    </div>
+    <div id="words-label">パパ</div>
+    <div id="words-hint">👆 タップしてね</div>
   </div>
 </div>
 
@@ -1103,8 +1168,8 @@ function speakWord(word) {
   }
 }
 
-function spawnParticles(e) {
-  const stage = document.getElementById("tap-stage");
+function spawnParticles(e, stageEl) {
+  const stage = stageEl || document.getElementById("tap-stage");
   const rect = stage.getBoundingClientRect();
   const cx = e.clientX ? e.clientX - rect.left : rect.width/2;
   const cy = e.clientY ? e.clientY - rect.top  : rect.height/2;
@@ -1163,6 +1228,8 @@ function showPage(id) {
     initNumber();
   } else if (id === "color-page") {
     initColor();
+  } else if (id === "words-page") {
+    initWords();
   } else if (id === "draw-page") {
     setTimeout(initCanvas, 50);
   }
@@ -1940,6 +2007,73 @@ function nextColor(e) {
 function initColor() {
   colorIdx = -1;
   nextColor({ clientX: null, clientY: null });
+}
+
+// ===================================================
+// はじめてのことば
+// ===================================================
+const WORDS = [
+  { emoji:"👨", label:"パパ" },
+  { emoji:"👩", label:"ママ" },
+  { emoji:"👴", label:"おじいちゃん" },
+  { emoji:"👵", label:"おばあちゃん" },
+  { emoji:"🍚", label:"まんま" },
+  { emoji:"🍴", label:"いただきます" },
+  { emoji:"😋", label:"ごちそうさまでした" },
+  { emoji:"☀️", label:"おはようございます" },
+  { emoji:"😴", label:"ねんね" },
+  { emoji:"🐶", label:"わんわん" },
+  { emoji:"🐱", label:"にゃんにゃん" },
+  { emoji:"🚗", label:"ぶーぶー" },
+  { emoji:"🤱", label:"だっこ" },
+  { emoji:"🥰", label:"かわいい" },
+  { emoji:"🙏", label:"ありがとう" },
+  { emoji:"👋", label:"バイバイ" },
+  { emoji:"💖", label:"だいすき" },
+];
+// カードの背景色（やさしいパステル）
+const WORDS_BG = [
+  ["#ffe29a","#ff8fb1"],
+  ["#a7e9ff","#5b8cff"],
+  ["#c8f7c5","#5ad67d"],
+  ["#e0c3fc","#8ec5fc"],
+  ["#ffd1ff","#fab1c4"],
+  ["#fbc2eb","#a18cd1"],
+];
+let wordIdx = 0;
+
+function nextWord(e) {
+  wordIdx = (wordIdx + 1) % WORDS.length;
+  const d = WORDS[wordIdx];
+  const emojiEl = document.getElementById("words-emoji");
+  const labelEl = document.getElementById("words-label");
+
+  emojiEl.textContent = d.emoji;
+  labelEl.textContent = d.label;
+  // 長い言葉は文字を小さく（はみ出し防止）
+  labelEl.style.fontSize = d.label.length > 6 ? "clamp(26px,7vw,46px)" : "clamp(40px,12vw,80px)";
+
+  // 背景色を変える
+  const bg = WORDS_BG[wordIdx % WORDS_BG.length];
+  const stage = document.getElementById("words-stage");
+  stage.style.setProperty("--wbg1", bg[0]);
+  stage.style.setProperty("--wbg2", bg[1]);
+
+  // ポップアニメ
+  emojiEl.classList.remove("pop"); void emojiEl.offsetWidth; emojiEl.classList.add("pop");
+
+  // 音＋読み上げ
+  playTone(523, 0.3, 0.2, "sine");
+  speakWord(d.label);
+
+  document.getElementById("words-hint").style.opacity = "0";
+  spawnParticles(e, stage);
+}
+
+function initWords() {
+  wordIdx = -1;
+  nextWord({ clientX: null, clientY: null });
+  document.getElementById("words-hint").style.opacity = "1";
 }
 
 // ===================================================
