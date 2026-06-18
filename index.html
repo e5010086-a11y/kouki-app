@@ -1578,9 +1578,108 @@ function stopBalloon() {
   stopBGM();
 }
 
-// 弾けたときの大きな演出（中央の大きな絵文字＋飛び散るキラキラ）
-const BURST_CENTER   = ["💥","🎉","✨","🌟","💫"];
-const BURST_PARTICLE = ["⭐","✨","🌸","💛","💙","🎀","🌟","💖","🌈"];
+// ===== えげつない破裂音（ランダムで数種類） =====
+function playNoise(dur, gain, filterType, freq) {
+  const ctx = getAudio();
+  const src = ctx.createBufferSource();
+  src.buffer = getNoise();
+  src.loop = true;
+  const f = ctx.createBiquadFilter();
+  f.type = filterType; f.frequency.value = freq;
+  const g = ctx.createGain();
+  src.connect(f); f.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(gain, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  src.start(ctx.currentTime); src.stop(ctx.currentTime + dur + 0.02);
+}
+
+// ① ぶちーん（下降ノコギリ＋ビリビリ）
+function burstBuchiin() {
+  const ctx = getAudio();
+  const osc = ctx.createOscillator(); const g = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(330, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(42, ctx.currentTime + 0.38);
+  const lfo = ctx.createOscillator(); const lg = ctx.createGain();
+  lfo.frequency.value = 32; lg.gain.value = 45;
+  lfo.connect(lg); lg.connect(osc.frequency);
+  g.gain.setValueAtTime(0.55, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.42);
+  osc.start(ctx.currentTime); lfo.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.42); lfo.stop(ctx.currentTime + 0.42);
+  playNoise(0.12, 0.4, "highpass", 2000);
+}
+// ② パーン！（鋭いノイズ＋高い音）
+function burstPaan() {
+  playNoise(0.18, 0.65, "highpass", 1400);
+  const ctx = getAudio();
+  const o = ctx.createOscillator(); const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = "triangle";
+  o.frequency.setValueAtTime(1900, ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.12);
+  g.gain.setValueAtTime(0.45, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
+  o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.16);
+}
+// ③ ドカーン（重い爆発）
+function burstDokan() {
+  const ctx = getAudio();
+  const o = ctx.createOscillator(); const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = "sine";
+  o.frequency.setValueAtTime(150, ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(28, ctx.currentTime + 0.4);
+  g.gain.setValueAtTime(0.75, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+  o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.45);
+  playNoise(0.32, 0.55, "lowpass", 800);
+}
+// ④ ビヨ〜ン（伸びる）
+function burstBoing() {
+  const ctx = getAudio();
+  const o = ctx.createOscillator(); const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = "square";
+  o.frequency.setValueAtTime(200, ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(820, ctx.currentTime + 0.1);
+  o.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.36);
+  g.gain.setValueAtTime(0.35, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+  o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.4);
+}
+// ⑤ ブブブッ（おならみたいなブザー）
+function burstBubu() {
+  const ctx = getAudio();
+  const o = ctx.createOscillator(); const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = "sawtooth";
+  o.frequency.setValueAtTime(95, ctx.currentTime);
+  o.frequency.linearRampToValueAtTime(70, ctx.currentTime + 0.35);
+  const lfo = ctx.createOscillator(); const lg = ctx.createGain();
+  lfo.type = "square"; lfo.frequency.value = 19; lg.gain.value = 0.3;
+  lfo.connect(lg); lg.connect(g.gain);
+  g.gain.setValueAtTime(0.4, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.36);
+  o.start(ctx.currentTime); lfo.start(ctx.currentTime);
+  o.stop(ctx.currentTime + 0.36); lfo.stop(ctx.currentTime + 0.36);
+}
+const BURST_SOUNDS = [burstBuchiin, burstPaan, burstDokan, burstBoing, burstBubu];
+function playBurstSound() {
+  BURST_SOUNDS[Math.floor(Math.random() * BURST_SOUNDS.length)]();
+}
+
+// ===== 弾け飛ぶエフェクト（ランダムで数種類） =====
+const BURST_TEXTS    = ["ぶちーん！","ぱぁん！","どっかーん！","ばちーん！","ずどーん！","ぼっかーん！"];
+const BURST_CENTERS  = ["💥","🎆","🎇","✨","🌟","💫","🔥"];
+const PARTICLE_SETS  = [
+  ["⭐","✨","🌟","💫"],
+  ["🎊","🎉","🎀","🌸"],
+  ["💛","💙","❤️","💜","💚","🧡"],
+  ["🔥","💥","⚡","✨"],
+  ["🌈","🍬","🍭","🎈"],
+];
 
 function balloonBurst(px, py, balloonEmoji) {
   const stage = document.getElementById("balloon-stage");
@@ -1593,34 +1692,35 @@ function balloonBurst(px, py, balloonEmoji) {
   stage.appendChild(ring);
   setTimeout(() => ring.remove(), 500);
 
-  // 大きな「ぱちん！」の文字
+  // 大きな破裂文字（ランダム）
   const text = document.createElement("div");
   text.className = "burst-text";
-  text.textContent = "ぱちん！";
+  text.textContent = BURST_TEXTS[Math.floor(Math.random() * BURST_TEXTS.length)];
   text.style.left = px + "px";
   text.style.top  = py + "px";
   stage.appendChild(text);
   setTimeout(() => text.remove(), 750);
 
-  // 中央の大きな絵文字
+  // 中央の大きな絵文字（ランダム）
   const center = document.createElement("div");
   center.className = "burst-center";
-  center.textContent = BURST_CENTER[Math.floor(Math.random() * BURST_CENTER.length)];
+  center.textContent = BURST_CENTERS[Math.floor(Math.random() * BURST_CENTERS.length)];
   center.style.left = px + "px";
   center.style.top  = py + "px";
   stage.appendChild(center);
   setTimeout(() => center.remove(), 600);
 
-  // 放射状に飛び散るキラキラ
-  const n = 10;
+  // 弾け飛ぶ破片（ランダムの絵文字セット・数・距離）
+  const set = PARTICLE_SETS[Math.floor(Math.random() * PARTICLE_SETS.length)];
+  const n   = 12 + Math.floor(Math.random() * 7); // 12〜18個
   for (let i = 0; i < n; i++) {
     const p = document.createElement("div");
     p.className = "b-particle";
-    p.textContent = BURST_PARTICLE[Math.floor(Math.random() * BURST_PARTICLE.length)];
+    p.textContent = set[Math.floor(Math.random() * set.length)];
     p.style.left = px + "px";
     p.style.top  = py + "px";
-    const angle = (Math.PI * 2 / n) * i;
-    const dist  = 110 + Math.random() * 90;
+    const angle = (Math.PI * 2 / n) * i + Math.random() * 0.5;
+    const dist  = 150 + Math.random() * 140; // 遠くまで弾け飛ぶ
     p.style.setProperty("--bx", Math.cos(angle) * dist + "px");
     p.style.setProperty("--by", Math.sin(angle) * dist + "px");
     stage.appendChild(p);
@@ -1659,9 +1759,8 @@ function spawnBalloon() {
       py = br.top  - rect.top  + br.height / 2;
     }
     balloonBurst(px, py, b.textContent);
-    // ポップ音（パチン！＋キラキラ）
-    playTone(900 + Math.random()*400, 0.5, 0.10, "triangle");
-    playTone(1600, 0.3, 0.18, "sine");
+    // えげつない破裂音（ランダム）
+    playBurstSound();
     setTimeout(() => b.remove(), 350);
   };
   b.addEventListener("touchstart", e => { e.preventDefault(); pop(e); }, { passive:false });
