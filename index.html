@@ -446,6 +446,26 @@
     100% { opacity: 0; transform: translateY(-80px) scale(1.4); }
   }
 
+  /* ===== BGM選択バー ===== */
+  .bgm-bar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 7px 12px; flex-wrap: wrap;
+    background: rgba(0,0,0,0.15);
+  }
+  .bgm-bar .bgm-label {
+    font-size: clamp(12px, 3.2vw, 15px);
+    color: #fff; font-weight: bold; letter-spacing: 1px;
+  }
+  .bgm-pick {
+    border: none; border-radius: 20px;
+    padding: 6px 15px;
+    font-size: clamp(13px, 3.4vw, 16px); font-weight: bold;
+    background: rgba(255,255,255,0.25); color: #fff;
+    cursor: pointer; transition: transform 0.1s, background 0.1s;
+  }
+  .bgm-pick.active { background: #FFD700; color: #333; }
+  .bgm-pick:active { transform: scale(0.93); }
+
   /* ===== バルーンタップ ===== */
   #balloon-page { background: linear-gradient(180deg, #87ceeb 0%, #b0e0ff 100%); }
   #balloon-stage { flex:1; position:relative; overflow:hidden; }
@@ -649,6 +669,12 @@
     <span>🐇</span>
     <span id="whack-speed-label">ふつう</span>
   </div>
+  <div class="bgm-bar">
+    <span class="bgm-label">🎶おんがく</span>
+    <button class="bgm-pick active" data-bgm="0" onclick="setBGM(0)">🎵ポップ</button>
+    <button class="bgm-pick" data-bgm="1" onclick="setBGM(1)">🕺ダンス</button>
+    <button class="bgm-pick" data-bgm="2" onclick="setBGM(2)">🌙ゆめ</button>
+  </div>
   <!-- スコア・レベル -->
   <div id="whack-hud">
     <span>⭐ <span id="whack-score">0</span>てん</span>
@@ -695,6 +721,12 @@
     <button class="back-btn" onclick="stopBalloon(); showHome()">⬅️</button>
     <span class="page-title">🎈 バルーンタップ！</span>
     <button class="lock-btn" onclick="toggleLock()">🔓</button>
+  </div>
+  <div class="bgm-bar">
+    <span class="bgm-label">🎶おんがく</span>
+    <button class="bgm-pick active" data-bgm="0" onclick="setBGM(0)">🎵ポップ</button>
+    <button class="bgm-pick" data-bgm="1" onclick="setBGM(1)">🕺ダンス</button>
+    <button class="bgm-pick" data-bgm="2" onclick="setBGM(2)">🌙ゆめ</button>
   </div>
   <div id="balloon-stage">
     <div id="balloon-score">⭐ 0</div>
@@ -1258,7 +1290,7 @@ function startWhack() {
 
   buildWhackGrid();
   resumeWhackLoop();
-  startBGM('whack');
+  startBGM();
 
   // カウントダウン（60秒）
   whackCountdown = setInterval(() => {
@@ -1334,29 +1366,97 @@ function endWhack() {
 }
 
 // ===================================================
-// BGM
+// BGM（リズミカル・3曲から選択）
 // ===================================================
-let bgmTimer = null;
-let bgmStep  = 0;
+let bgmTimer    = null;
+let bgmStep     = 0;
+let bgmPlaying  = false;
+let selectedBGM = 0;
+
+// ドラム音
+let noiseBuffer = null;
+function getNoise() {
+  if (noiseBuffer) return noiseBuffer;
+  const ctx = getAudio();
+  const len = Math.floor(ctx.sampleRate * 0.2);
+  noiseBuffer = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  return noiseBuffer;
+}
+function playKick() {
+  const ctx = getAudio();
+  const osc = ctx.createOscillator();
+  const g   = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(160, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.13);
+  g.gain.setValueAtTime(0.5, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+  osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.18);
+}
+function playHat(gain = 0.12) {
+  const ctx = getAudio();
+  const src = ctx.createBufferSource();
+  src.buffer = getNoise();
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass"; hp.frequency.value = 7000;
+  const g = ctx.createGain();
+  src.connect(hp); hp.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(gain, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+  src.start(ctx.currentTime); src.stop(ctx.currentTime + 0.07);
+}
+
+// 16ステップのリズムパターン（mel:メロディ周波数 0=休符 / kick:バスドラ / hat:ハイハット）
+const BGM_TRACKS = [
+  {
+    name: "ポップ", emoji: "🎵", step: 165,
+    mel:  [523,0,659,784, 0,659,523,0, 587,0,698,0, 587,0,440,0],
+    kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,1,0],
+    hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+  },
+  {
+    name: "ダンス", emoji: "🕺", step: 145,
+    mel:  [392,0,392,0, 523,0,587,0, 659,0,587,0, 523,0,440,0],
+    kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+    hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,1],
+  },
+  {
+    name: "ゆめ", emoji: "🌙", step: 200,
+    mel:  [659,0,0,523, 0,587,0,0, 440,0,0,392, 0,440,0,0],
+    kick: [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
+    hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+  },
+];
+
+function startBGM() {
+  stopBGM();
+  bgmPlaying = true;
+  bgmStep = 0;
+  const t = BGM_TRACKS[selectedBGM];
+  bgmTimer = setInterval(() => {
+    const s = bgmStep % 16;
+    if (t.mel[s])  playTone(t.mel[s], 0.12, t.step * 1.6 / 1000, "triangle");
+    if (t.kick[s]) playKick();
+    if (t.hat[s])  playHat();
+    bgmStep++;
+  }, t.step);
+}
 
 function stopBGM() {
   if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+  bgmPlaying = false;
   bgmStep = 0;
 }
 
-function startBGM(type) {
-  stopBGM();
-  // balloon: 明るいアルペジオ  whack: 元気なメロディ
-  const patterns = {
-    balloon: [523,659,784,1047,784,659,523,440,494,659,880,659,494,392,440,523],
-    whack:   [392,494,587,659,587,494,392,330,349,440,523,587,523,440,349,392],
-  };
-  const notes = patterns[type] || patterns.balloon;
-  const tempo = type === 'whack' ? 280 : 340;
-  bgmTimer = setInterval(() => {
-    playTone(notes[bgmStep % notes.length], 0.10, (tempo * 0.85) / 1000, 'sine');
-    bgmStep++;
-  }, tempo);
+function setBGM(i) {
+  selectedBGM = i;
+  document.querySelectorAll(".bgm-pick").forEach(b => {
+    b.classList.toggle("active", parseInt(b.dataset.bgm) === i);
+  });
+  if (bgmPlaying) startBGM(); // 再生中なら新しい曲ですぐ切り替え
 }
 
 // ===================================================
@@ -1372,7 +1472,7 @@ function startBalloon() {
   balloonActive = true;
   document.getElementById("balloon-score").textContent = "⭐ 0";
   document.getElementById("balloon-stage").querySelectorAll(".balloon").forEach(b=>b.remove());
-  startBGM('balloon');
+  startBGM();
   spawnBalloon();
 }
 
