@@ -1258,6 +1258,7 @@ function startWhack() {
 
   buildWhackGrid();
   resumeWhackLoop();
+  startBGM('whack');
 
   // カウントダウン（60秒）
   whackCountdown = setInterval(() => {
@@ -1318,6 +1319,7 @@ function stopWhack() {
   whackActive = false;
   clearWhackLoop();
   if (whackCountdown) { clearInterval(whackCountdown); whackCountdown = null; }
+  stopBGM();
 }
 
 function endWhack() {
@@ -1329,6 +1331,32 @@ function endWhack() {
   document.getElementById("whack-gameover").classList.add("show");
   // ゲームオーバー音
   [800,600,400,300].forEach((f,i) => setTimeout(()=>playTone(f,0.3,0.2,"sine"), i*150));
+}
+
+// ===================================================
+// BGM
+// ===================================================
+let bgmTimer = null;
+let bgmStep  = 0;
+
+function stopBGM() {
+  if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+  bgmStep = 0;
+}
+
+function startBGM(type) {
+  stopBGM();
+  // balloon: 明るいアルペジオ  whack: 元気なメロディ
+  const patterns = {
+    balloon: [523,659,784,1047,784,659,523,440,494,659,880,659,494,392,440,523],
+    whack:   [392,494,587,659,587,494,392,330,349,440,523,587,523,440,349,392],
+  };
+  const notes = patterns[type] || patterns.balloon;
+  const tempo = type === 'whack' ? 280 : 340;
+  bgmTimer = setInterval(() => {
+    playTone(notes[bgmStep % notes.length], 0.10, (tempo * 0.85) / 1000, 'sine');
+    bgmStep++;
+  }, tempo);
 }
 
 // ===================================================
@@ -1344,12 +1372,14 @@ function startBalloon() {
   balloonActive = true;
   document.getElementById("balloon-score").textContent = "⭐ 0";
   document.getElementById("balloon-stage").querySelectorAll(".balloon").forEach(b=>b.remove());
+  startBGM('balloon');
   spawnBalloon();
 }
 
 function stopBalloon() {
   balloonActive = false;
   if (balloonTimer) { clearTimeout(balloonTimer); balloonTimer = null; }
+  stopBGM();
 }
 
 function spawnBalloon() {
