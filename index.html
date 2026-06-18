@@ -819,6 +819,37 @@
     width:84%; height:36%; background:#fff; border-radius:5px 5px 0 0;
   }
 
+  /* メガネ（おじいちゃん・おばあちゃん用、ふだんは非表示） */
+  .av-glasses {
+    position:absolute; top:33%; left:50%; transform:translateX(-50%);
+    width:78%; height:26%; display:none; z-index:6; pointer-events:none;
+  }
+  .av-glasses .lens {
+    position:absolute; top:0; width:40%; height:96%;
+    border:3px solid #5a4a3a; border-radius:50%;
+    background:rgba(255,255,255,0.1);
+  }
+  .av-glasses .lens.l { left:0; } .av-glasses .lens.r { right:0; }
+  .av-glasses .bridge {
+    position:absolute; top:38%; left:40%; width:20%; height:3px; background:#5a4a3a;
+  }
+  .avatar.ojiichan .av-glasses, .avatar.obaachan .av-glasses { display:block; }
+
+  /* おじいちゃん：白髪・短髪・メガネ */
+  .avatar.ojiichan { --hair:#b3aaa0; --shirt:#9cbf9a; --skin:#f3d2af; --iris:#6e5640; }
+  .avatar.ojiichan .av-hair-back { top:14%; width:58%; height:36%; border-radius:50% 50% 42% 42%; }
+  .avatar.ojiichan .av-bangs {
+    top:14%; width:58%; height:16%; background:var(--hair);
+    border-radius:50% 50% 30% 30% / 60% 60% 40% 40%;
+  }
+  /* おばあちゃん：白髪・ふんわりショート・メガネ */
+  .avatar.obaachan { --hair:#cbc5bf; --shirt:#d2b3df; --skin:#ffe0c6; --iris:#6e5640; }
+  .avatar.obaachan .av-hair-back { top:11%; width:68%; height:50%; border-radius:52% 52% 46% 46%; }
+  .avatar.obaachan .av-bangs {
+    top:11%; width:66%; height:22%; background:var(--hair);
+    border-radius:50% 50% 36% 36% / 65% 65% 45% 45%;
+  }
+
   /* ===== おえかき ===== */
   #draw-page { background: #f8f8f8; }
   #draw-toolbar {
@@ -2100,8 +2131,8 @@ function initColor() {
 const WORDS = [
   { avatar:"papa", label:"パパ" },
   { avatar:"mama", label:"ママ" },
-  { emoji:"👴", label:"おじいちゃん" },
-  { emoji:"👵", label:"おばあちゃん" },
+  { avatar:"ojiichan", label:"おじいちゃん" },
+  { avatar:"obaachan", label:"おばあちゃん" },
   { emoji:"🍚", label:"まんま" },
   { emoji:"🍴", label:"いただきます" },
   { emoji:"😋", label:"ごちそうさまでした" },
@@ -2138,6 +2169,7 @@ function avatarHTML(type) {
     +   '<div class="av-nose"></div>'
     +   '<div class="av-cheek l"></div><div class="av-cheek r"></div>'
     +   '<div class="av-mouth"></div>'
+    +   '<div class="av-glasses"><div class="lens l"></div><div class="lens r"></div><div class="bridge"></div></div>'
     + '</div>'
     + '<div class="av-bangs"></div>'
     + '</div>';
