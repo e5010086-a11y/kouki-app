@@ -93,6 +93,7 @@
     touch-action: none;
     user-select: none;
   }
+  /* 白鍵 */
   .p-white {
     border: none;
     border-radius: 0 0 12px 12px;
@@ -113,6 +114,7 @@
     transform: translateY(4px);
     box-shadow: 0 2px 0 rgba(0,0,0,0.18);
   }
+  /* 黒鍵 */
   .p-black {
     position: absolute;
     border: none;
@@ -181,6 +183,7 @@
     color:#ff6b6b; font-size:clamp(14px,4vw,18px);
     font-weight:bold; min-height:24px; letter-spacing:2px;
   }
+  /* トップバーのロックボタン */
   .lock-btn {
     font-size:24px; background:none; border:none; cursor:pointer; padding:8px;
     opacity: 0.7;
@@ -252,6 +255,7 @@
     margin-top: 16px;
     letter-spacing: 2px;
   }
+  /* パーティクル */
   .particle {
     position: absolute;
     pointer-events: none;
@@ -365,6 +369,7 @@
     60%  { transform: scale(0.8, 1.2); }
     100% { transform: scale(1); }
   }
+  /* レベルアップ演出 */
   #whack-levelup {
     display: none;
     position: fixed; inset: 0;
@@ -382,6 +387,7 @@
   @keyframes bounce { from { transform: scale(1); } to { transform: scale(1.2); } }
   #whack-levelup .lvl-text { font-size: clamp(28px, 8vw, 48px); font-weight: bold; text-shadow: 0 2px 8px #000; }
   #whack-levelup .lvl-sub  { font-size: clamp(18px, 5vw, 28px); }
+  /* ゲームオーバー */
   #whack-gameover {
     display: none;
     position: fixed; inset: 0;
@@ -408,6 +414,7 @@
     box-shadow: 0 6px 0 #c0506e;
     cursor: pointer;
   }
+  /* 速度スライダー */
   #whack-speed-bar {
     display: flex;
     align-items: center;
@@ -423,6 +430,7 @@
     accent-color: #FFD700;
     height: 6px;
   }
+  /* スコアポップ */
   .score-pop {
     position: fixed;
     font-size: clamp(28px, 8vw, 48px);
@@ -454,11 +462,11 @@
     0%   { transform: translateY(0) rotate(var(--rot)); opacity:1; }
     100% { transform: translateY(-110vh) rotate(calc(var(--rot)*-1)); opacity:0.5; }
   }
-  .balloon.pop { animation: balloonPop 0.2s ease-out forwards !important; pointer-events:none; }
+  .balloon.pop { animation: balloonPop 0.3s ease forwards !important; }
   @keyframes balloonPop {
-    0%   { transform: scale(1.0); opacity:1; }
-    30%  { transform: scale(2.4); opacity:1; }
-    100% { transform: scale(0);   opacity:0; }
+    0%  { transform: scale(1); opacity:1; }
+    40% { transform: scale(1.6); opacity:1; }
+    100%{ transform: scale(0);  opacity:0; }
   }
   #balloon-score {
     position: absolute; top:12px; left:50%; transform:translateX(-50%);
@@ -560,8 +568,6 @@
     flex:1; width:100%; display:block;
     touch-action:none; cursor:crosshair;
   }
-
-  /* ===== ホームボタン色 ===== */
   #btn-balloon { background: linear-gradient(135deg,#ff6b9d,#ff9eb5); color: white; }
   #btn-number  { background: linear-gradient(135deg,#f9a825,#ffcc02); color: white; }
   #btn-color   { background: linear-gradient(135deg,#ab47bc,#e040fb); color: white; }
@@ -570,135 +576,6 @@
   #btn-music   { background: linear-gradient(135deg,#4fc3f7,#81d4fa); color: white; }
   #btn-piano   { background: linear-gradient(135deg,#66bb6a,#a5d6a7); color: white; }
   #btn-whack   { background: linear-gradient(135deg,#ffa726,#ffcc80); color: white; }
-  #btn-animal  { background: linear-gradient(135deg,#26a69a,#80cbc4); color: white; }
-  #btn-food    { background: linear-gradient(135deg,#ef6c00,#ffa726); color: white; }
-  #btn-word    { background: linear-gradient(135deg,#e91e63,#f48fb1); color: white; }
-
-  /* ===== どうぶつ・たべものグリッド ===== */
-  #animal-page { background: linear-gradient(160deg, #e8f5e9 0%, #a5d6a7 100%); }
-  #food-page   { background: linear-gradient(160deg, #fff8e1 0%, #ffcc80 100%); }
-  #animal-grid, #food-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 10px;
-    overflow-y: auto;
-  }
-  .animal-btn, .food-btn {
-    background: white;
-    border: none;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    cursor: pointer;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.12);
-    padding: 10px 6px;
-    min-height: 96px;
-    transition: transform 0.1s, box-shadow 0.1s;
-    touch-action: manipulation;
-    position: relative;
-    overflow: hidden;
-  }
-  .animal-btn:active, .food-btn:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 rgba(0,0,0,0.12);
-  }
-  .animal-btn.bump, .food-btn.bump { animation: bumpPop 0.35s ease; }
-  @keyframes bumpPop {
-    0%  { transform: scale(1); }
-    40% { transform: scale(1.18) rotate(-4deg); }
-    70% { transform: scale(0.95) rotate(2deg); }
-    100%{ transform: scale(1); }
-  }
-  .a-icon, .f-icon { font-size: clamp(34px, 9vw, 54px); line-height: 1; }
-  .a-name, .f-name {
-    font-size: clamp(12px, 3vw, 16px);
-    font-weight: bold;
-    color: #555;
-    letter-spacing: 1px;
-    text-align: center;
-  }
-
-  /* ===== はじめてのことば ===== */
-  #word-page { background: #1a1a2e; }
-  #word-stage {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 24px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: background 0.5s;
-  }
-  #word-icon {
-    font-size: clamp(72px, 20vw, 140px);
-    line-height: 1;
-    min-height: clamp(72px, 20vw, 140px);
-  }
-  #word-icon.pop { animation: wordPop 0.38s ease; }
-  #word-big {
-    font-size: clamp(52px, 15vw, 108px);
-    font-weight: 900;
-    line-height: 1.1;
-    color: white;
-    text-align: center;
-    letter-spacing: 6px;
-    text-shadow: 4px 4px 0 rgba(0,0,0,0.4), 0 0 40px rgba(255,255,255,0.25);
-  }
-  #word-big.pop { animation: wordPop 0.38s ease; }
-  @keyframes wordPop {
-    0%  { transform: scale(1); }
-    35% { transform: scale(1.3) rotate(-5deg); }
-    70% { transform: scale(0.92) rotate(3deg); }
-    100%{ transform: scale(1); }
-  }
-  #word-stars {
-    font-size: clamp(28px, 8vw, 48px);
-    letter-spacing: 8px;
-    min-height: 56px;
-  }
-  #word-stars.spin { animation: starSpin 0.4s ease; }
-  @keyframes starSpin {
-    0%  { transform: scale(0) rotate(-30deg); opacity:0; }
-    60% { transform: scale(1.2) rotate(5deg); opacity:1; }
-    100%{ transform: scale(1) rotate(0); opacity:1; }
-  }
-  #word-hint { font-size: clamp(16px, 4vw, 22px); color: rgba(255,255,255,0.4); letter-spacing: 2px; }
-
-  /* ほめエフェクト */
-  #praise-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    pointer-events: none;
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-  }
-  #praise-overlay.show { display: flex; }
-  #praise-text {
-    font-size: clamp(48px, 14vw, 90px);
-    font-weight: 900;
-    color: #FFD700;
-    text-shadow: 4px 4px 0 #c07000, 0 0 40px rgba(255,215,0,0.8);
-    animation: praiseAnim 1.2s ease forwards;
-    text-align: center;
-    letter-spacing: 4px;
-  }
-  @keyframes praiseAnim {
-    0%  { opacity:0; transform: scale(0.3) rotate(-10deg); }
-    30% { opacity:1; transform: scale(1.2) rotate(3deg); }
-    60% { transform: scale(1) rotate(0); }
-    80% { opacity:1; }
-    100%{ opacity:0; transform: scale(0.8) translateY(-40px); }
-  }
 </style>
 </head>
 <body class="home-open">
@@ -708,9 +585,6 @@
   <h1>🚀 こうきくんの<br>あそびば！</h1>
   <div id="home-subtitle">⚡ LET'S PLAY ⚡</div>
   <button class="mode-btn" id="btn-tap"     data-page="tap-page">🐸 タップであそぶ</button>
-  <button class="mode-btn" id="btn-animal"  data-page="animal-page">🐾 どうぶつ</button>
-  <button class="mode-btn" id="btn-food"    data-page="food-page">🍎 たべもの</button>
-  <button class="mode-btn" id="btn-word"    data-page="word-page">💬 はじめてのことば</button>
   <button class="mode-btn" id="btn-music"   data-page="music-page">🎵 おんがくであそぶ</button>
   <button class="mode-btn" id="btn-piano"   data-page="piano-page">🎹 ピアノをひく</button>
   <button class="mode-btn" id="btn-whack"   data-page="whack-page">🔨 もぐらたたき</button>
@@ -747,11 +621,6 @@
   </div>
 </div>
 
-<!-- ほめオーバーレイ -->
-<div id="praise-overlay">
-  <div id="praise-text">すごーい！</div>
-</div>
-
 <!-- タップ遊びページ -->
 <div id="tap-page" class="page">
   <div class="top-bar">
@@ -773,18 +642,21 @@
     <span class="page-title">🔨 もぐらたたき！</span>
     <button class="lock-btn" onclick="toggleLock()" id="lock-toggle-btn">🔓</button>
   </div>
+  <!-- 速度スライダー -->
   <div id="whack-speed-bar">
     <span>🐢</span>
     <input type="range" id="whack-speed" min="1" max="5" value="2" oninput="updateSpeedLabel()">
     <span>🐇</span>
     <span id="whack-speed-label">ふつう</span>
   </div>
+  <!-- スコア・レベル -->
   <div id="whack-hud">
     <span>⭐ <span id="whack-score">0</span>てん</span>
     <span id="whack-level-badge">レベル 1</span>
     <span id="whack-combo"></span>
     <button onclick="startWhack()" style="background:#FFD700;border:none;border-radius:20px;padding:6px 18px;font-size:clamp(14px,3.5vw,18px);font-weight:bold;cursor:pointer;">▶ スタート</button>
   </div>
+  <!-- 穴グリッド（3×3） -->
   <div id="whack-grid"></div>
 </div>
 
@@ -889,41 +761,6 @@
   <div id="music-grid"></div>
 </div>
 
-<!-- どうぶつページ -->
-<div id="animal-page" class="page">
-  <div class="top-bar">
-    <button class="back-btn" onclick="showHome()">⬅️</button>
-    <span class="page-title">🐾 どうぶつ！</span>
-    <button class="lock-btn" onclick="toggleLock()">🔓</button>
-  </div>
-  <div id="animal-grid"></div>
-</div>
-
-<!-- たべものページ -->
-<div id="food-page" class="page">
-  <div class="top-bar">
-    <button class="back-btn" onclick="showHome()">⬅️</button>
-    <span class="page-title">🍎 たべもの！</span>
-    <button class="lock-btn" onclick="toggleLock()">🔓</button>
-  </div>
-  <div id="food-grid"></div>
-</div>
-
-<!-- はじめてのことばページ -->
-<div id="word-page" class="page">
-  <div class="top-bar">
-    <button class="back-btn" onclick="showHome()">⬅️</button>
-    <span class="page-title">💬 はじめてのことば！</span>
-    <button class="lock-btn" onclick="toggleLock()">🔓</button>
-  </div>
-  <div id="word-stage" onclick="nextWord(event)">
-    <div id="word-icon"></div>
-    <div id="word-big">ママ</div>
-    <div id="word-stars">⭐⭐⭐</div>
-    <div id="word-hint">👆 タップしてね</div>
-  </div>
-</div>
-
 <script>
 // ===================================================
 // データ定義
@@ -960,70 +797,10 @@ const MUSIC_BUTTONS = [
 
 const PARTICLES = ["⭐","✨","🌸","💛","💙","🌟","🎀","🎵","❤️"];
 
-// ===== どうぶつデータ =====
-const ANIMALS = [
-  { emoji:"🐶", label:"いぬ",     spoken:"わんわん、いぬ",   sound:"dog"      },
-  { emoji:"🐱", label:"ねこ",     spoken:"にゃー、ねこ",     sound:"cat"      },
-  { emoji:"🐮", label:"うし",     spoken:"もー、うし",       sound:"cow"      },
-  { emoji:"🐷", label:"ぶた",     spoken:"ぶー、ぶた",       sound:"pig"      },
-  { emoji:"🐸", label:"かえる",   spoken:"けろけろ",         sound:"frog"     },
-  { emoji:"🦁", label:"ライオン", spoken:"がおー、ライオン", sound:"lion"     },
-  { emoji:"🐘", label:"ぞう",     spoken:"ぱおー、ぞう",     sound:"elephant" },
-  { emoji:"🐧", label:"ペンギン", spoken:"ペンペン、ペンギン",sound:"penguin"  },
-  { emoji:"🐔", label:"にわとり", spoken:"こっこ、にわとり", sound:"chicken"  },
-  { emoji:"🦊", label:"きつね",   spoken:"こんこん、きつね", sound:"fox"      },
-  { emoji:"🐻", label:"くま",     spoken:"くま",             sound:"bear"     },
-  { emoji:"🐼", label:"パンダ",   spoken:"パンダ",           sound:"panda"    },
-  { emoji:"🐨", label:"コアラ",   spoken:"コアラ",           sound:"koala"    },
-  { emoji:"🐯", label:"とら",     spoken:"がおー、とら",     sound:"tiger"    },
-  { emoji:"🦒", label:"きりん",   spoken:"きりん",           sound:"giraffe"  },
-];
-
-// ===== たべものデータ =====
-const FOODS = [
-  { emoji:"🍎", label:"りんご",       color:"#ff5555" },
-  { emoji:"🍌", label:"ばなな",       color:"#ffcc00" },
-  { emoji:"🍊", label:"みかん",       color:"#ff8833" },
-  { emoji:"🍇", label:"ぶどう",       color:"#9933cc" },
-  { emoji:"🍓", label:"いちご",       color:"#ff3366" },
-  { emoji:"🍑", label:"もも",         color:"#ffaaaa" },
-  { emoji:"🍋", label:"れもん",       color:"#dddd00" },
-  { emoji:"🍒", label:"さくらんぼ",   color:"#cc2244" },
-  { emoji:"🥝", label:"キウイ",       color:"#77bb33" },
-  { emoji:"🥕", label:"にんじん",     color:"#ff8844" },
-  { emoji:"🌽", label:"とうもろこし", color:"#ffcc00" },
-  { emoji:"🍆", label:"なす",         color:"#882299" },
-  { emoji:"🥦", label:"ブロッコリー", color:"#33aa44" },
-  { emoji:"🍅", label:"トマト",       color:"#ff4422" },
-  { emoji:"🍠", label:"さつまいも",   color:"#cc6622" },
-];
-
-// ===== はじめてのことばデータ =====
-const WORDS = [
-  { word:"ママ",         icon:"👩",  bg:"#c0392b" },
-  { word:"パパ",         icon:"👨",  bg:"#2980b9" },
-  { word:"おばあちゃん", icon:"👵",  bg:"#6a1b9a" },
-  { word:"おじいちゃん", icon:"👴",  bg:"#5d4037" },
-  { word:"まんま",       icon:"🍚",  bg:"#e67e22" },
-  { word:"ねんね",       icon:"😴",  bg:"#8e44ad" },
-  { word:"わんわん",     icon:"🐶",  bg:"#d35400" },
-  { word:"にゃんにゃん", icon:"🐱",  bg:"#c0392b" },
-  { word:"ぶーぶー",     icon:"🚗",  bg:"#7f8c8d" },
-  { word:"ばいばい",     icon:"👋",  bg:"#27ae60" },
-  { word:"だっこ",       icon:"🤗",  bg:"#e91e63" },
-  { word:"あんよ",       icon:"👣",  bg:"#1565c0" },
-  { word:"おいしい",     icon:"😋",  bg:"#e65100" },
-  { word:"かわいい",     icon:"💕",  bg:"#ad1457" },
-  { word:"すきすき",     icon:"❤️",  bg:"#c62828" },
-  { word:"おはよう",     icon:"🌅",  bg:"#f57f17" },
-  { word:"ありがとう",   icon:"🙏",  bg:"#2e7d32" },
-];
-
 // ===================================================
 // Web Audio
 // ===================================================
-let audioCtx  = null;
-let jaVoices  = [];
+let audioCtx = null;
 function getAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -1058,9 +835,11 @@ function playMusicSound(type, [freq, gain, dur]) {
     [1,2,3,4].forEach((m,i) => playTone(freq*m, gain/(i+1), dur, "sine"));
   } else if (type === "sparkle") {
     [0,0.1,0.2,0.3].forEach(t => {
+      const ctx = getAudio();
       setTimeout(()=>playTone(freq + Math.random()*400, gain*0.5, dur*0.5, "sine"), t*1000);
     });
   } else if (type === "song") {
+    // ドレミっぽいメロディ
     const notes = [261,293,330,349,392];
     notes.forEach((n,i) => {
       setTimeout(()=>playTone(n, gain, 0.3, "sine"), i*200);
@@ -1074,113 +853,6 @@ function playMusicSound(type, [freq, gain, dur]) {
   } else {
     playTone(freq, gain, dur, "sine");
     playTone(freq*1.5, gain*0.3, dur*0.6, "sine");
-  }
-}
-
-// ===== 動物の鳴き声 =====
-function playAnimalSound(type) {
-  const ctx = getAudio();
-  const now = ctx.currentTime;
-
-  function tone(freq1, freq2, gain, dur, waveType, delay) {
-    const osc = ctx.createOscillator();
-    const gn  = ctx.createGain();
-    osc.connect(gn); gn.connect(ctx.destination);
-    osc.type = waveType || 'sine';
-    osc.frequency.setValueAtTime(freq1, now + (delay||0));
-    if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, now + (delay||0) + dur * 0.8);
-    gn.gain.setValueAtTime(gain, now + (delay||0));
-    gn.gain.exponentialRampToValueAtTime(0.001, now + (delay||0) + dur);
-    osc.start(now + (delay||0));
-    osc.stop(now + (delay||0) + dur + 0.05);
-  }
-
-  switch(type) {
-    case 'dog':
-      tone(380, 260, 0.55, 0.14, 'triangle', 0);
-      tone(380, 260, 0.55, 0.14, 'triangle', 0.28);
-      break;
-    case 'cat':
-      tone(520, 720, 0.45, 0.18, 'sine', 0);
-      tone(720, 440, 0.45, 0.38, 'sine', 0.18);
-      break;
-    case 'cow':
-      tone(110, 130, 0.5, 0.9, 'sawtooth', 0);
-      tone(220, 200, 0.2, 0.9, 'sine', 0);
-      break;
-    case 'pig':
-      tone(230, 190, 0.4, 0.22, 'square', 0);
-      tone(210, 170, 0.35, 0.2, 'square', 0.25);
-      break;
-    case 'frog':
-      tone(600, 350, 0.5, 0.1, 'sine', 0);
-      tone(600, 350, 0.5, 0.1, 'sine', 0.18);
-      tone(600, 350, 0.5, 0.1, 'sine', 0.36);
-      break;
-    case 'lion':
-    case 'tiger':
-      tone(90, 70, 0.55, 0.9, 'sawtooth', 0);
-      tone(180, 140, 0.25, 0.7, 'sawtooth', 0);
-      break;
-    case 'elephant':
-      tone(160, 420, 0.55, 0.55, 'sawtooth', 0);
-      tone(320, 840, 0.25, 0.45, 'sine', 0.05);
-      break;
-    case 'penguin':
-      tone(650, 500, 0.4, 0.12, 'sine', 0);
-      tone(580, 440, 0.4, 0.12, 'sine', 0.2);
-      tone(520, 380, 0.35, 0.12, 'sine', 0.4);
-      break;
-    case 'chicken':
-      tone(900, 600, 0.4, 0.09, 'triangle', 0);
-      tone(850, 550, 0.4, 0.09, 'triangle', 0.15);
-      tone(800, 500, 0.35, 0.09, 'triangle', 0.3);
-      break;
-    case 'fox':
-      tone(500, 350, 0.45, 0.16, 'sine', 0);
-      tone(500, 350, 0.45, 0.16, 'sine', 0.28);
-      break;
-    case 'bear':
-      tone(95, 75, 0.55, 0.75, 'sawtooth', 0);
-      tone(190, 150, 0.2, 0.6, 'sine', 0);
-      break;
-    case 'panda':
-    case 'koala':
-      tone(380, 480, 0.4, 0.28, 'sine', 0);
-      tone(480, 360, 0.4, 0.38, 'sine', 0.28);
-      break;
-    case 'giraffe':
-    default:
-      tone(300, 400, 0.4, 0.4, 'sine', 0);
-      tone(400, 300, 0.3, 0.4, 'sine', 0.4);
-      break;
-  }
-}
-
-// ===== チャイム音（たべもの用） =====
-function playChime(rootFreq) {
-  [1, 1.26, 1.5, 2].forEach((m, i) => {
-    setTimeout(() => playTone(rootFreq * m, 0.35, 0.5, 'sine'), i * 80);
-  });
-}
-
-// ===== ほめ演出 =====
-const PRAISES = ['すごーい！', 'やったね！', 'えらいね！', 'じょうず！', 'かわいい！'];
-let tapCount = 0;
-function tryPraise() {
-  tapCount++;
-  if (tapCount % 5 === 0) {
-    const msg = PRAISES[Math.floor(Math.random() * PRAISES.length)];
-    document.getElementById('praise-text').textContent = msg;
-    const el = document.getElementById('praise-overlay');
-    el.classList.add('show');
-    el.querySelector('#praise-text').style.animation = 'none';
-    void el.querySelector('#praise-text').offsetWidth;
-    el.querySelector('#praise-text').style.animation = '';
-    setTimeout(() => el.classList.remove('show'), 1300);
-    // 上昇音
-    [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.3, 0.2, 'sine'), i * 100));
-    setTimeout(() => speakWord(msg), 600);
   }
 }
 
@@ -1198,65 +870,77 @@ function nextItem(e) {
   emojiEl.textContent = item.emoji;
   labelEl.textContent = item.label;
 
+  // ポップアニメ
   emojiEl.classList.remove("pop");
   void emojiEl.offsetWidth;
   emojiEl.classList.add("pop");
 
+  // 音
   playItemSound(item.sound);
+
+  // 読み上げ
   speakWord(item.label);
+
+  // パーティクル
   spawnParticles(e);
 
+  // ヒント非表示
   document.getElementById("tap-hint").style.opacity = "0";
-  tryPraise();
 }
 
+// 日本語音声リストをキャッシュ
+let jaVoices = [];
 function loadVoices() {
-  if (!('speechSynthesis' in window)) return;
   const all = window.speechSynthesis.getVoices();
+  // 優先順位: Kyoko（女性・標準）> O-ren（大阪）> ja-JPのどれか
   jaVoices = all.filter(v => v.lang && v.lang.startsWith("ja"));
+}
+if ('speechSynthesis' in window) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
 }
 
 function pickVoice() {
   if (!jaVoices.length) return null;
-  const pref = jaVoices.find(v => /Kyoko|Siri|Japanese/i.test(v.name));
-  return pref || jaVoices[0];
+  // 関西弁っぽい声を優先（O-ren はiOS/macOSにある大阪弁音声）
+  const prefer = ["O-ren","Kyoko","Otoya","Hattori","Google 日本語","Microsoft Haruka"];
+  for (const name of prefer) {
+    const v = jaVoices.find(v => v.name.includes(name));
+    if (v) return v;
+  }
+  return jaVoices[0];
 }
 
 function speakWord(word) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
+
+  // ボイスがまだロードされていないときは少し待つ
   const doSpeak = () => {
     const utter = new SpeechSynthesisUtterance(word);
-    utter.lang   = "ja-JP";
-    utter.rate   = 0.72;
-    utter.pitch  = 1.3;
-    utter.volume = 1.0;
+    utter.lang = "ja-JP";
+    utter.rate = 0.75;   // ゆっくりはっきり
+    utter.pitch = 1.3;   // 少し高めで聞き取りやすく
     const voice = pickVoice();
     if (voice) utter.voice = voice;
     window.speechSynthesis.speak(utter);
   };
+
   if (jaVoices.length) {
     doSpeak();
   } else {
-    loadVoices();
-    if (jaVoices.length) {
-      doSpeak();
-    } else {
-      window.speechSynthesis.onvoiceschanged = () => {
-        loadVoices();
-        doSpeak();
-        window.speechSynthesis.onvoiceschanged = null;
-      };
-      setTimeout(doSpeak, 250);
-    }
+    // voiceschanged を一度だけ待って発話
+    const handler = () => { loadVoices(); doSpeak(); window.speechSynthesis.onvoiceschanged = null; };
+    window.speechSynthesis.onvoiceschanged = handler;
+    setTimeout(doSpeak, 300); // 300ms待ってもvoiceschangedが来なければそのまま発話
   }
 }
 
 function spawnParticles(e) {
   const stage = document.getElementById("tap-stage");
   const rect = stage.getBoundingClientRect();
-  const cx = e && e.clientX ? e.clientX - rect.left : rect.width/2;
-  const cy = e && e.clientY ? e.clientY - rect.top  : rect.height/2;
+  const cx = e.clientX ? e.clientX - rect.left : rect.width/2;
+  const cy = e.clientY ? e.clientY - rect.top  : rect.height/2;
 
   for (let i = 0; i < 8; i++) {
     const el = document.createElement("div");
@@ -1271,115 +955,6 @@ function spawnParticles(e) {
     stage.appendChild(el);
     setTimeout(() => el.remove(), 900);
   }
-}
-
-// 汎用パーティクル（座標指定）
-function spawnParticlesAt(x, y, container) {
-  for (let i = 0; i < 7; i++) {
-    const el = document.createElement("div");
-    el.className = "particle";
-    el.textContent = PARTICLES[Math.floor(Math.random() * PARTICLES.length)];
-    const angle = (Math.PI * 2 / 7) * i;
-    const dist = 60 + Math.random() * 50;
-    el.style.left = x + "px";
-    el.style.top  = y + "px";
-    el.style.setProperty("--tx", Math.cos(angle)*dist + "px");
-    el.style.setProperty("--ty", Math.sin(angle)*dist + "px");
-    el.style.position = "fixed";
-    el.style.zIndex = "999";
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 900);
-  }
-}
-
-// ===================================================
-// BGM（バックグラウンドミュージック）
-// ===================================================
-const BGM_PATTERNS = {
-  balloon: {
-    // きらきら星
-    wave: 'triangle',
-    gain: 0.09,
-    notes: [
-      [262,0.38],[262,0.38],[392,0.38],[392,0.38],[440,0.38],[440,0.38],[392,0.76],
-      [349,0.38],[349,0.38],[330,0.38],[330,0.38],[294,0.38],[294,0.38],[262,0.76],
-      [392,0.38],[392,0.38],[349,0.38],[349,0.38],[330,0.38],[330,0.38],[294,0.76],
-      [392,0.38],[392,0.38],[349,0.38],[349,0.38],[330,0.38],[330,0.38],[294,0.76],
-      [262,0.38],[262,0.38],[392,0.38],[392,0.38],[440,0.38],[440,0.38],[392,0.76],
-      [349,0.38],[349,0.38],[330,0.38],[330,0.38],[294,0.38],[294,0.38],[262,0.76],
-    ]
-  },
-  whack: {
-    // カンカン（オッフェンバック「天国と地獄」より）BPM≈188
-    wave: 'square',
-    gain: 0.07,
-    notes: [
-      // ── フレーズA ──
-      [294,0.16],[294,0.16],[294,0.16],[294,0.16],
-      [392,0.16],[440,0.16],[392,0.16],[370,0.16],
-      [330,0.16],[330,0.16],[330,0.16],[330,0.16],
-      [440,0.16],[494,0.16],[440,0.16],[392,0.16],
-      // ── フレーズB ──
-      [370,0.16],[370,0.16],[370,0.16],[370,0.16],
-      [494,0.16],[554,0.16],[494,0.16],[440,0.16],
-      [392,0.16],[440,0.16],[494,0.16],[554,0.16],
-      [587,0.32],[0,0.16],[587,0.16],
-      // ── フレーズC（上昇→クライマックス）──
-      [659,0.16],[587,0.16],[554,0.16],[494,0.16],
-      [440,0.16],[392,0.16],[370,0.16],[330,0.16],
-      [370,0.16],[440,0.16],[494,0.16],[554,0.16],
-      [587,0.16],[659,0.16],[740,0.16],[784,0.16],
-      [784,0.48],[0,0.32],
-    ]
-  }
-};
-
-let bgmActive  = false;
-let bgmTimeout = null;
-let bgmPattern = null;
-let bgmNoteIdx = 0;
-let bgmNextTime = 0;
-
-function stopBgMusic() {
-  bgmActive = false;
-  if (bgmTimeout) { clearTimeout(bgmTimeout); bgmTimeout = null; }
-}
-
-function startBgMusic(type) {
-  stopBgMusic();
-  bgmPattern  = BGM_PATTERNS[type];
-  bgmNoteIdx  = 0;
-  bgmActive   = true;
-  const ctx   = getAudio();
-  bgmNextTime = ctx.currentTime + 0.15;
-  scheduleBgm();
-}
-
-function scheduleBgm() {
-  if (!bgmActive) return;
-  const ctx   = getAudio();
-  const ahead = 0.35;
-
-  while (bgmNextTime < ctx.currentTime + ahead) {
-    const [freq, dur] = bgmPattern.notes[bgmNoteIdx % bgmPattern.notes.length];
-    bgmNoteIdx++;
-
-    if (freq > 0) {
-      const osc = ctx.createOscillator();
-      const gn  = ctx.createGain();
-      osc.connect(gn); gn.connect(ctx.destination);
-      osc.type = bgmPattern.wave;
-      osc.frequency.setValueAtTime(freq, bgmNextTime);
-      gn.gain.setValueAtTime(bgmPattern.gain, bgmNextTime);
-      gn.gain.exponentialRampToValueAtTime(0.001, bgmNextTime + dur * 0.85);
-      osc.start(bgmNextTime);
-      osc.stop(bgmNextTime + dur);
-    }
-
-    bgmNextTime += dur;
-  }
-
-  bgmTimeout = setTimeout(scheduleBgm, 100);
 }
 
 // ===================================================
@@ -1403,119 +978,6 @@ function buildMusicGrid() {
 }
 
 // ===================================================
-// どうぶつグリッド生成
-// ===================================================
-function buildAnimalGrid() {
-  const grid = document.getElementById("animal-grid");
-  grid.innerHTML = "";
-  ANIMALS.forEach(a => {
-    const btn = document.createElement("button");
-    btn.className = "animal-btn";
-    // ランダムな淡い背景色
-    const hue = Math.floor(Math.random() * 360);
-    btn.style.background = `hsl(${hue},70%,94%)`;
-    btn.innerHTML = `<span class="a-icon">${a.emoji}</span><span class="a-name">${a.label}</span>`;
-
-    const handler = (e) => {
-      e.preventDefault();
-      const touch = e.touches ? e.touches[0] : e;
-      spawnParticlesAt(touch.clientX, touch.clientY, document.body);
-      playAnimalSound(a.sound);
-      btn.classList.remove("bump"); void btn.offsetWidth; btn.classList.add("bump");
-      speakWord(a.spoken);
-      tryPraise();
-    };
-    btn.addEventListener("touchend", handler, { passive: false });
-    btn.addEventListener("click", handler);
-    grid.appendChild(btn);
-  });
-}
-
-// ===================================================
-// たべものグリッド生成
-// ===================================================
-function buildFoodGrid() {
-  const grid = document.getElementById("food-grid");
-  grid.innerHTML = "";
-  const CHIME_ROOTS = [523, 587, 659, 698, 784, 880, 988];
-  FOODS.forEach((f, i) => {
-    const btn = document.createElement("button");
-    btn.className = "food-btn";
-    btn.style.background = f.color + "33";
-    btn.style.borderTop = `4px solid ${f.color}`;
-    btn.innerHTML = `<span class="f-icon">${f.emoji}</span><span class="f-name">${f.label}</span>`;
-
-    const rootFreq = CHIME_ROOTS[i % CHIME_ROOTS.length];
-    const handler = (e) => {
-      e.preventDefault();
-      const touch = e.touches ? e.touches[0] : e;
-      spawnParticlesAt(touch.clientX, touch.clientY, document.body);
-      playChime(rootFreq);
-      btn.classList.remove("bump"); void btn.offsetWidth; btn.classList.add("bump");
-      speakWord(f.label);
-      tryPraise();
-    };
-    btn.addEventListener("touchend", handler, { passive: false });
-    btn.addEventListener("click", handler);
-    grid.appendChild(btn);
-  });
-}
-
-// ===================================================
-// はじめてのことば
-// ===================================================
-let wordIdx = -1;
-
-function nextWord(e) {
-  wordIdx = (wordIdx + 1) % WORDS.length;
-  const w = WORDS[wordIdx];
-
-  const stage   = document.getElementById("word-stage");
-  const iconEl  = document.getElementById("word-icon");
-  const bigEl   = document.getElementById("word-big");
-  const starsEl = document.getElementById("word-stars");
-  const hintEl  = document.getElementById("word-hint");
-
-  stage.style.background = w.bg;
-
-  iconEl.textContent = w.icon || "";
-  iconEl.classList.remove("pop");
-  requestAnimationFrame(() => iconEl.classList.add("pop"));
-
-  bigEl.textContent = w.word;
-  bigEl.classList.remove("pop");
-  requestAnimationFrame(() => bigEl.classList.add("pop"));
-
-  const starSet = ["⭐","🌟","✨","💫","🌈","🎵","❤️","🎉"];
-  const stars = Array.from({length:3}, () => starSet[Math.floor(Math.random()*starSet.length)]);
-  starsEl.textContent = stars.join(" ");
-  starsEl.classList.remove("spin");
-  requestAnimationFrame(() => starsEl.classList.add("spin"));
-
-  hintEl.style.opacity = "0";
-
-  // 効果音 → 少し後に読み上げ（元の動作パターンに戻す）
-  playTone(523, 0.3, 0.15, "sine");
-  playTone(659, 0.3, 0.15, "sine", 0);
-  setTimeout(() => speakWord(w.word), 200);
-
-  if (e) {
-    const touch = e.touches ? e.touches[0] : e;
-    spawnParticlesAt(touch.clientX || window.innerWidth/2, touch.clientY || window.innerHeight/2);
-  }
-  tryPraise();
-}
-
-function initWord() {
-  wordIdx = -1;
-  document.getElementById("word-stage").style.background = "#1a1a2e";
-  document.getElementById("word-icon").textContent = "";
-  document.getElementById("word-big").textContent = "👆";
-  document.getElementById("word-stars").textContent = "⭐⭐⭐";
-  document.getElementById("word-hint").style.opacity = "1";
-}
-
-// ===================================================
 // ページ切り替え
 // ===================================================
 function showPage(id) {
@@ -1536,15 +998,10 @@ function showPage(id) {
     initColor();
   } else if (id === "draw-page") {
     setTimeout(initCanvas, 50);
-  } else if (id === "word-page") {
-    initWord();
-  } else if (id === "piano-page") {
-    setTimeout(buildPianoKeys, 50);
   }
 }
 function showHome() {
   stopBalloon();
-  stopBgMusic();
   document.body.classList.add("home-open");
   document.getElementById("home").style.display = "flex";
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
@@ -1553,6 +1010,8 @@ function showHome() {
 // ===================================================
 // ピアノ（白鍵＋黒鍵）
 // ===================================================
+
+// 白鍵: ド〜ド（1オクターブ+1）
 const WHITE_KEYS = [
   { note:"ド",  freq:261.6, color:"#ffcdd2", emoji:"🍓" },
   { note:"レ",  freq:293.7, color:"#ffe0b2", emoji:"🍊" },
@@ -1564,6 +1023,8 @@ const WHITE_KEYS = [
   { note:"ド↑", freq:523.3, color:"#ffcdd2", emoji:"🎀" },
 ];
 
+// 黒鍵: 白鍵の何番目の右側に置くか(0始まり)、音名、周波数
+// ド#=0右, レ#=1右, ファ#=3右, ソ#=4右, ラ#=5右
 const BLACK_KEYS = [
   { after:0, note:"ド#", freq:277.2, emoji:"⭐" },
   { after:1, note:"レ#", freq:311.1, emoji:"🌙" },
@@ -1591,40 +1052,31 @@ function buildPianoKeys() {
   const wrap = document.getElementById("piano-keys");
   wrap.innerHTML = "";
 
-  // 使用可能幅を取得（ページが非表示の場合は window.innerWidth をフォールバック）
-  const pianoWrap = document.getElementById("piano-wrap");
-  const availW = (pianoWrap.clientWidth > 0 ? pianoWrap.clientWidth : window.innerWidth) - 32;
+  const vw = window.innerWidth;
+  const WN = WHITE_KEYS.length; // 8
+  const gap = 3;
+  const wKeyW = Math.min(Math.floor((vw - 32 - gap*(WN-1)) / WN), 68);
+  const wKeyH = Math.min(wKeyW * 3.0, 200);
+  const bKeyW = Math.round(wKeyW * 0.62);
+  const bKeyH = Math.round(wKeyH * 0.62);
 
-  const GAP  = 5;
-  const WN   = WHITE_KEYS.length; // 8
-  const wKeyW = Math.floor((availW - GAP * (WN - 1)) / WN);
-  const wKeyH = Math.min(Math.floor(wKeyW * 3.2), 260);
-  const bKeyW = Math.floor(wKeyW * 0.62);
-  const bKeyH = Math.floor(wKeyH * 0.62);
-  const totalW = WN * wKeyW + (WN - 1) * GAP;
+  const totalW = WN * wKeyW + (WN-1) * gap;
+  wrap.style.width  = totalW + "px";
+  wrap.style.height = wKeyH + "px";
 
-  wrap.style.cssText = `
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    gap: ${GAP}px;
-    width: ${totalW}px;
-    height: ${wKeyH}px;
-    touch-action: none;
-    user-select: none;
-  `;
-
-  // 白鍵
-  WHITE_KEYS.forEach(k => {
+  // 白鍵を生成
+  WHITE_KEYS.forEach((k, i) => {
     const btn = document.createElement("button");
     btn.className = "p-white";
-    const emojiSize = Math.max(Math.round(wKeyW * 0.5), 18);
-    const lblSize   = Math.max(Math.round(wKeyW * 0.28), 10);
-    btn.style.cssText = `width:${wKeyW}px; height:${wKeyH}px; flex-shrink:0; background:${k.color};`;
-    btn.innerHTML = `
-      <span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>
-      <span class="key-label" style="font-size:${lblSize}px;color:#666">${k.note}</span>
+    const left = i * (wKeyW + gap);
+    btn.style.cssText = `
+      width:${wKeyW}px; height:${wKeyH}px;
+      background:${k.color};
+      position:absolute; left:${left}px; top:0;
     `;
+    const emojiSize = Math.max(Math.round(wKeyW * 0.45), 18);
+    btn.innerHTML = `<span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>
+                     <span class="key-label">${k.note}</span>`;
     const play = () => {
       playPianoKey(k.freq);
       document.getElementById("piano-note-display").textContent = k.emoji + " " + k.note;
@@ -1636,17 +1088,20 @@ function buildPianoKeys() {
     wrap.appendChild(btn);
   });
 
-  // 黒鍵（白鍵の上に absolute で重ねる）
+  // 黒鍵を生成（白鍵の上に重ねる）
   BLACK_KEYS.forEach(k => {
-    const leftX = (k.after + 1) * (wKeyW + GAP) - Math.round(bKeyW / 2);
     const btn = document.createElement("button");
     btn.className = "p-black";
-    const emojiSize = Math.max(Math.round(bKeyW * 0.5), 14);
+    // 黒鍵の中心 = after番目の白鍵の右端
+    const center = (k.after + 1) * (wKeyW + gap) - gap/2;
+    const left   = Math.round(center - bKeyW / 2);
     btn.style.cssText = `
-      position:absolute; left:${leftX}px; top:0;
-      width:${bKeyW}px; height:${bKeyH}px; z-index:2;
+      width:${bKeyW}px; height:${bKeyH}px;
+      left:${left}px; top:0;
     `;
-    btn.innerHTML = `<span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>`;
+    const emojiSize = Math.max(Math.round(bKeyW * 0.45), 14);
+    btn.innerHTML = `<span class="key-emoji" style="font-size:${emojiSize}px">${k.emoji}</span>
+                     <span class="key-label" style="color:#aaa">${k.note}</span>`;
     const play = () => {
       playPianoKey(k.freq);
       document.getElementById("piano-note-display").textContent = k.emoji + " " + k.note;
@@ -1662,8 +1117,11 @@ function buildPianoKeys() {
 // ===================================================
 // モグラ叩き
 // ===================================================
+
+// キャラクター一覧（赤ちゃんが好きなキャラ系絵文字）
 const WHACK_CHARAS = ["🤖","🐙","👾","🦁","🐯","🐻‍❄️","🐼","🦊","🐸","🐧","🦄","🐮"];
 
+// レベル定義: { hitTarget:叩く数, upTime:顔出し時間ms, interval:出現間隔ms, label }
 const WHACK_LEVELS = [
   { hitTarget: 5,  upTime: 2400, interval: 1800, label:"レベル 1", sub:"ゆっくり" },
   { hitTarget: 8,  upTime: 2000, interval: 1500, label:"レベル 2", sub:"すこしはやい" },
@@ -1673,20 +1131,22 @@ const WHACK_LEVELS = [
 ];
 
 const HOLES = 9;
-let whackTimers   = [];
-let whackLoop     = null;
+let whackTimers   = [];   // 各穴のタイマー
+let whackLoop     = null; // メインループ
 let whackScore    = 0;
-let whackLevel    = 0;
-let whackHits     = 0;
+let whackLevel    = 0;    // 0始まり (表示は+1)
+let whackHits     = 0;    // このレベルで叩いた数
 let whackCombo    = 0;
 let whackActive   = false;
 let whackUpStates = new Array(HOLES).fill(false);
-let whackGameTime = 60;
+let whackGameTime = 60;   // 秒
 let whackTimerEl  = null;
 let whackCountdown= null;
 
+// 速度スライダーの倍率 (1=おそい, 5=はやい) → 時間に掛けるmultiplier
 function speedMult() {
   const v = parseInt(document.getElementById("whack-speed").value);
+  // 1→1.8, 2→1.3, 3→1.0, 4→0.75, 5→0.55
   return [1.8, 1.3, 1.0, 0.75, 0.55][v-1];
 }
 const SPEED_LABELS = ["おそい","ふつう","はやい","とてもはやい","ちょうはやい！"];
@@ -1706,6 +1166,7 @@ function buildWhackGrid() {
     const chara = document.createElement("div");
     chara.className = "chara";
     chara.dataset.idx = i;
+    // ランダムキャラ割り当て
     chara.textContent = WHACK_CHARAS[i % WHACK_CHARAS.length];
     bg.appendChild(chara);
     hole.appendChild(bg);
@@ -1719,7 +1180,7 @@ function getLevel() { return WHACK_LEVELS[Math.min(whackLevel, WHACK_LEVELS.leng
 
 function whackHit(idx, charaEl, e) {
   if (!whackActive) return;
-  if (!whackUpStates[idx]) return;
+  if (!whackUpStates[idx]) return; // 出ていない穴を叩いた
 
   whackUpStates[idx] = false;
   clearTimeout(whackTimers[idx]);
@@ -1731,6 +1192,7 @@ function whackHit(idx, charaEl, e) {
   whackHits++;
   whackCombo++;
 
+  // スコアポップ表示
   const pop = document.createElement("div");
   pop.className = "score-pop";
   const touch = e.touches ? e.touches[0] : e;
@@ -1740,12 +1202,14 @@ function whackHit(idx, charaEl, e) {
   document.body.appendChild(pop);
   setTimeout(() => pop.remove(), 800);
 
+  // ヒット音
   playTone(600, 0.5, 0.15, "sine");
   playTone(900, 0.3, 0.1,  "sine");
 
   document.getElementById("whack-score").textContent = whackScore;
   if (whackCombo >= 3) document.getElementById("whack-combo").textContent = `🔥 ${whackCombo}れんぞく！`;
 
+  // レベルアップチェック
   const lv = getLevel();
   if (whackHits >= lv.hitTarget) {
     whackLevelUp();
@@ -1753,17 +1217,19 @@ function whackHit(idx, charaEl, e) {
 }
 
 function whackLevelUp() {
-  if (whackLevel >= WHACK_LEVELS.length - 1) return;
+  if (whackLevel >= WHACK_LEVELS.length - 1) return; // 最高レベル
   clearWhackLoop();
   whackLevel++;
   whackHits = 0;
   const lv = getLevel();
 
+  // 演出
   document.getElementById("lvl-text").textContent = lv.label + " アップ！";
   document.getElementById("lvl-sub").textContent  = lv.sub;
   const lvup = document.getElementById("whack-levelup");
   lvup.classList.add("show");
 
+  // レベルアップ音（上昇音）
   [400,500,600,800].forEach((f,i) => setTimeout(()=>playTone(f,0.4,0.2,"sine"), i*100));
 
   setTimeout(() => {
@@ -1792,8 +1258,8 @@ function startWhack() {
 
   buildWhackGrid();
   resumeWhackLoop();
-  startBgMusic('whack');
 
+  // カウントダウン（60秒）
   whackCountdown = setInterval(() => {
     whackGameTime--;
     if (whackGameTime <= 0) {
@@ -1811,6 +1277,7 @@ function resumeWhackLoop() {
 
   whackLoop = setInterval(() => {
     if (!whackActive) return;
+    // ランダムな穴を1〜2個出す
     const numPop = whackLevel >= 3 ? 2 : 1;
     const candidates = [];
     for (let i = 0; i < HOLES; i++) if (!whackUpStates[i]) candidates.push(i);
@@ -1824,6 +1291,7 @@ function popChara(idx, upTime) {
   if (!charas[idx]) return;
   const el = charas[idx];
 
+  // ランダムにキャラ変更（飽きさせない）
   el.textContent = WHACK_CHARAS[Math.floor(Math.random() * WHACK_CHARAS.length)];
 
   whackUpStates[idx] = true;
@@ -1834,7 +1302,7 @@ function popChara(idx, upTime) {
     if (whackUpStates[idx]) {
       whackUpStates[idx] = false;
       el.classList.remove("up");
-      whackCombo = 0;
+      whackCombo = 0; // 見逃したらコンボリセット
       document.getElementById("whack-combo").textContent = "";
     }
   }, upTime);
@@ -1850,15 +1318,16 @@ function stopWhack() {
   whackActive = false;
   clearWhackLoop();
   if (whackCountdown) { clearInterval(whackCountdown); whackCountdown = null; }
-  stopBgMusic();
 }
 
 function endWhack() {
   stopWhack();
+  // 全キャラを引っ込める
   document.querySelectorAll(".chara").forEach(el => el.classList.remove("up","hit"));
   document.getElementById("go-score").textContent = whackScore;
   document.getElementById("go-level").textContent = whackLevel + 1;
   document.getElementById("whack-gameover").classList.add("show");
+  // ゲームオーバー音
   [800,600,400,300].forEach((f,i) => setTimeout(()=>playTone(f,0.3,0.2,"sine"), i*150));
 }
 
@@ -1866,146 +1335,21 @@ function endWhack() {
 // バルーンタップ
 // ===================================================
 const BALLOONS = ["🎈","🎀","🌸","⭐","🌟","🍭","🌈","🎊","💛","💙","❤️","💜"];
-const BURST_COLORS = [
-  "#ff4757","#ffa502","#ffdd59","#7bed9f","#70a1ff",
-  "#ff6b81","#eccc68","#a29bfe","#fd79a8","#00d2d3"
-];
 let balloonScore = 0;
 let balloonTimer = null;
 let balloonActive = false;
-
-// バルーン破裂音
-function playBalloonPop() {
-  const ctx = getAudio();
-  const now = ctx.currentTime;
-  // 複数周波数の短いバースト → 「パン！」という音
-  [160, 320, 640, 1100, 2400].forEach((f, i) => {
-    const osc = ctx.createOscillator();
-    const gn  = ctx.createGain();
-    osc.connect(gn); gn.connect(ctx.destination);
-    osc.type = i < 2 ? "triangle" : "sawtooth";
-    osc.frequency.setValueAtTime(f, now);
-    osc.frequency.exponentialRampToValueAtTime(f * 0.04, now + 0.07);
-    gn.gain.setValueAtTime(0.28 / (i * 0.6 + 1), now);
-    gn.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-    osc.start(now);
-    osc.stop(now + 0.12);
-  });
-  // 空気が抜けるシュー音
-  const hiss = ctx.createOscillator();
-  const hGn  = ctx.createGain();
-  hiss.connect(hGn); hGn.connect(ctx.destination);
-  hiss.type = "sawtooth";
-  hiss.frequency.setValueAtTime(3800, now + 0.02);
-  hiss.frequency.exponentialRampToValueAtTime(180, now + 0.22);
-  hGn.gain.setValueAtTime(0.07, now + 0.02);
-  hGn.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
-  hiss.start(now + 0.02);
-  hiss.stop(now + 0.26);
-}
-
-// 破片パーティクル（JS transition 駆動 — iOS Safari でも確実に動く）
-function spawnBurstParticles(cx, cy, color) {
-  // ① 衝撃波フラッシュ
-  const flash = document.createElement("div");
-  flash.style.cssText = `
-    position:fixed; left:${cx}px; top:${cy}px;
-    width:40px; height:40px; border-radius:50%;
-    background:radial-gradient(circle, #fff 0%, ${color} 45%, transparent 100%);
-    pointer-events:none; z-index:502;
-    transform:translate(-50%,-50%) scale(1);
-    opacity:1;
-    transition:transform 0.22s ease-out, opacity 0.22s ease-out;
-  `;
-  document.body.appendChild(flash);
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    flash.style.transform = "translate(-50%,-50%) scale(14)";
-    flash.style.opacity   = "0";
-  }));
-  setTimeout(() => flash.remove(), 280);
-
-  // ② カラフルな破片（24個・大きめ）
-  const PIECE_COUNT = 24;
-  for (let i = 0; i < PIECE_COUNT; i++) {
-    const el       = document.createElement("div");
-    const angle    = (Math.PI * 2 / PIECE_COUNT) * i + (Math.random() - 0.5) * 0.4;
-    const dist     = 160 + Math.random() * 200;
-    const size     = 44 + Math.random() * 44;   // 44〜88px
-    const durMs    = 550 + Math.random() * 350;
-    const isCircle = Math.random() > 0.45;
-    const c        = Math.random() > 0.3
-                     ? color
-                     : BURST_COLORS[Math.floor(Math.random() * BURST_COLORS.length)];
-    const tx  = Math.cos(angle) * dist;
-    const ty  = Math.sin(angle) * dist;
-    const rot = (Math.random() - 0.5) * 720;
-
-    el.style.cssText = `
-      position:fixed;
-      left:${cx - size / 2}px; top:${cy - size / 2}px;
-      width:${size}px; height:${size}px;
-      background:${c};
-      border-radius:${isCircle ? "50%" : "8px"};
-      box-shadow:0 6px 18px rgba(0,0,0,0.4);
-      pointer-events:none; z-index:500;
-      opacity:1;
-      transform:scale(1) translate(0px,0px) rotate(0deg);
-      transition:transform ${durMs}ms cubic-bezier(0.05,0.9,0.3,1),
-                 opacity   ${durMs * 0.5}ms ease-in ${durMs * 0.5}ms;
-    `;
-    document.body.appendChild(el);
-
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      el.style.transform = `translate(${tx}px,${ty}px) scale(0.08) rotate(${rot}deg)`;
-      el.style.opacity   = "0";
-    }));
-    setTimeout(() => el.remove(), durMs + 60);
-  }
-
-  // ③ 絵文字パーティクル（8個・大きめ）
-  const EMOJI_SET = ["✨","⭐","💥","🎊","🌟","🎉","💛","🌈"];
-  for (let i = 0; i < 8; i++) {
-    const el    = document.createElement("div");
-    const angle = (Math.PI * 2 / 8) * i + (Math.random() - 0.5) * 0.3;
-    const dist  = 120 + Math.random() * 100;
-    const size  = 52 + Math.random() * 36;      // 52〜88px
-    const durMs = 650 + Math.random() * 300;
-    const tx = Math.cos(angle) * dist;
-    const ty = Math.sin(angle) * dist - 30;
-
-    el.style.cssText = `
-      position:fixed; left:${cx}px; top:${cy}px;
-      font-size:${size}px; line-height:1;
-      pointer-events:none; z-index:501;
-      opacity:1;
-      transform:translate(-50%,-50%) scale(1.4);
-      transition:transform ${durMs}ms ease-out,
-                 opacity   ${durMs * 0.55}ms ease-in ${durMs * 0.45}ms;
-    `;
-    el.textContent = EMOJI_SET[i % EMOJI_SET.length];
-    document.body.appendChild(el);
-
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      el.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0.15)`;
-      el.style.opacity   = "0";
-    }));
-    setTimeout(() => el.remove(), durMs + 60);
-  }
-}
 
 function startBalloon() {
   balloonScore = 0;
   balloonActive = true;
   document.getElementById("balloon-score").textContent = "⭐ 0";
   document.getElementById("balloon-stage").querySelectorAll(".balloon").forEach(b=>b.remove());
-  startBgMusic('balloon');
   spawnBalloon();
 }
 
 function stopBalloon() {
   balloonActive = false;
   if (balloonTimer) { clearTimeout(balloonTimer); balloonTimer = null; }
-  stopBgMusic();
 }
 
 function spawnBalloon() {
@@ -2015,41 +1359,28 @@ function spawnBalloon() {
   b.className = "balloon";
   const emoji = BALLOONS[Math.floor(Math.random() * BALLOONS.length)];
   b.textContent = emoji;
-  const x   = 5 + Math.random() * 80;
+  const x = 5 + Math.random() * 80;
   const dur = 3.5 + Math.random() * 3;
   const rot = (Math.random() - 0.5) * 30;
-  // バルーンごとにランダムな色を割り当て
-  const burstColor = BURST_COLORS[Math.floor(Math.random() * BURST_COLORS.length)];
   b.style.cssText = `left:${x}vw; bottom:-15%; --dur:${dur}s; --rot:${rot}deg;`;
 
   const pop = (e) => {
-    if (b.dataset.popped) return;
-    b.dataset.popped = "1";
+    if (b.classList.contains("pop")) return;
     e.stopPropagation();
-
-    // ① アニメ切替前に現在位置を取得（これより前に DOM を触らない）
-    const rect = b.getBoundingClientRect();
-    const cx = rect.left + rect.width  / 2;
-    const cy = rect.top  + rect.height / 2;
-
-    // ② バルーンはその場で即消す（animationを切り替えると底に戻るため使わない）
-    b.style.opacity = "0";
-    b.style.pointerEvents = "none";
-
-    // ③ スコア更新・エフェクト
+    b.classList.add("pop");
     balloonScore++;
     document.getElementById("balloon-score").textContent = "⭐ " + balloonScore;
-    playBalloonPop();
-    spawnBurstParticles(cx, cy, burstColor);
-
-    setTimeout(() => b.remove(), 800);
+    // ポップ音
+    playTone(800 + Math.random()*400, 0.4, 0.12, "sine");
+    setTimeout(() => b.remove(), 300);
   };
   b.addEventListener("touchstart", e => { e.preventDefault(); pop(e); }, { passive:false });
   b.addEventListener("mousedown", pop);
-  b.addEventListener("animationend", () => { if (!b.dataset.popped) b.remove(); });
+  b.addEventListener("animationend", () => b.remove());
 
   stage.appendChild(b);
 
+  // 次の風船を間隔を置いて出す
   const interval = 900 + Math.random() * 600;
   balloonTimer = setTimeout(spawnBalloon, interval);
 }
@@ -2079,6 +1410,7 @@ function nextNumber(e) {
   bigEl.classList.remove("pop"); void bigEl.offsetWidth; bigEl.classList.add("pop");
   document.getElementById("number-label").textContent = d.label;
 
+  // ドット表示
   const dotsEl = document.getElementById("number-dots");
   dotsEl.innerHTML = "";
   [...d.dots].forEach((ch, i) => {
@@ -2089,6 +1421,7 @@ function nextNumber(e) {
     dotsEl.appendChild(span);
   });
 
+  // 音+読み上げ
   playTone(440 + d.n * 30, 0.4, 0.2, "sine");
   speakWord(d.label);
   spawnParticles(e);
@@ -2149,6 +1482,7 @@ let drawColor = "#ff4444";
 
 function initCanvas() {
   const canvas = document.getElementById("draw-canvas");
+  const rect   = canvas.parentElement.getBoundingClientRect();
   const toolbar = document.getElementById("draw-toolbar");
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight - toolbar.offsetHeight - 60;
@@ -2212,16 +1546,19 @@ function clearCanvas() {
 // ===================================================
 // ロック機能
 // ===================================================
-const LOCK_PIN = "0000";
+const LOCK_PIN = "0000"; // PIN
 let isLocked   = false;
 let pinBuffer  = "";
 
 function toggleLock() {
   if (isLocked) {
+    // ロック中→解除画面を表示
     showLockOverlay();
   } else {
+    // ロックする
     isLocked = true;
     updateLockBtns();
+    // 戻るボタンを無効化
     setBackBtnsDisabled(true);
   }
 }
@@ -2280,16 +1617,21 @@ function updateDots() {
 
 function checkPin() {
   if (pinBuffer === LOCK_PIN) {
+    // 解除成功
     isLocked = false;
     pinBuffer = "";
     document.getElementById("lock-overlay").classList.remove("show");
     updateLockBtns();
+    // 解除音（上昇音）
     [400, 600, 800].forEach((f,i) => setTimeout(()=>playTone(f,0.3,0.15,"sine"), i*80));
   } else {
+    // 失敗
     document.getElementById("lock-error").textContent = "❌ ちがいます";
     pinBuffer = "";
     updateDots();
+    // 失敗音
     playTone(200, 0.4, 0.3, "sawtooth");
+    // 画面を振る
     const overlay = document.getElementById("lock-overlay");
     overlay.style.animation = "none";
     overlay.style.transform = "translateX(-12px)";
@@ -2298,30 +1640,24 @@ function checkPin() {
   }
 }
 
-// ===================================================
 // 初期化
-// ===================================================
 buildMusicGrid();
 buildPianoKeys();
 buildWhackGrid();
-buildAnimalGrid();
-buildFoodGrid();
 
+// ホームボタンのタッチ・クリックイベントをJSで直接バインド（iOS Safari対応）
 document.querySelectorAll(".mode-btn[data-page]").forEach(btn => {
   const page = btn.getAttribute("data-page");
   const handler = (e) => {
     e.preventDefault();
     showPage(page);
   };
-  btn.addEventListener("touchend", handler, { passive: false });
+  btn.addEventListener("touchstart", handler, { passive: false });
   btn.addEventListener("click", handler);
 });
 
+// 初回タッチでAudioContext解除
 document.addEventListener("touchstart", () => getAudio(), { once: true });
-if ('speechSynthesis' in window) {
-  loadVoices();
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-}
 </script>
 </body>
 </html>
