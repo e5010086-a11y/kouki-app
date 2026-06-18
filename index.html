@@ -1646,14 +1646,21 @@ buildPianoKeys();
 buildWhackGrid();
 
 // ホームボタンのタッチ・クリックイベントをJSで直接バインド（iOS Safari対応）
+// touchstart で座標を記録し、touchend で移動距離が小さければタップとみなす
 document.querySelectorAll(".mode-btn[data-page]").forEach(btn => {
   const page = btn.getAttribute("data-page");
-  const handler = (e) => {
-    e.preventDefault();
-    showPage(page);
-  };
-  btn.addEventListener("touchstart", handler, { passive: false });
-  btn.addEventListener("click", handler);
+  let startY = 0;
+  btn.addEventListener("touchstart", e => {
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  btn.addEventListener("touchend", e => {
+    const dy = Math.abs(e.changedTouches[0].clientY - startY);
+    if (dy < 10) {
+      e.preventDefault();
+      showPage(page);
+    }
+  }, { passive: false });
+  btn.addEventListener("click", e => showPage(page));
 });
 
 // 初回タッチでAudioContext解除
