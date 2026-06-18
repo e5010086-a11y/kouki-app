@@ -733,47 +733,79 @@
     color:rgba(255,255,255,0.95); font-weight:bold; letter-spacing:2px;
     text-shadow:0 2px 4px rgba(0,0,0,0.2);
   }
-  /* 似顔絵アバター（写真は使わず安全なイラスト） */
-  .avatar { position:relative; width:min(54vw,240px); height:min(54vw,240px); }
+  /* 似顔絵アバター（アニメ風・写真は使わず安全なイラスト） */
+  .avatar { position:relative; width:min(58vw,256px); height:min(58vw,256px); }
+  /* 後ろ髪 */
+  .av-hair-back { position:absolute; left:50%; transform:translateX(-50%); background:var(--hair); z-index:1; }
+  /* 服 */
   .av-body {
-    position:absolute; bottom:2%; left:50%; transform:translateX(-50%);
-    width:86%; height:40%;
-    background:var(--shirt);
-    border-radius:46% 46% 24% 24% / 72% 72% 28% 28%;
-    z-index:1;
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:92%; height:32%; background:var(--shirt);
+    border-radius:46% 46% 22% 22% / 75% 75% 25% 25%; z-index:2;
   }
-  .av-hair {
-    position:absolute; left:50%; transform:translateX(-50%);
-    background:var(--hair); z-index:2;
-  }
+  /* 顔 */
   .av-face {
-    position:absolute; top:16%; left:50%; transform:translateX(-50%);
-    width:58%; height:60%;
-    background:var(--skin,#ffe0bd);
-    border-radius:50%; z-index:3;
-    box-shadow: inset -6px -8px 12px rgba(0,0,0,0.07);
+    position:absolute; top:18%; left:50%; transform:translateX(-50%);
+    width:56%; height:58%; background:var(--skin,#ffe0bd);
+    border-radius:46% 46% 50% 50% / 42% 42% 58% 58%;
+    z-index:3; box-shadow: inset -5px -7px 12px rgba(0,0,0,0.06);
   }
-  /* パパ：黒い短髪・クリーム色の服 */
-  .avatar.papa { --hair:#2b2218; --shirt:#f1e8c6; --skin:#f6d2b0; }
-  .avatar.papa .av-hair { top:10%; width:62%; height:33%; border-radius:50% 50% 42% 42%; }
-  /* ママ：やさしい雰囲気・ロングヘア */
-  .avatar.mama { --hair:#3a2a1d; --shirt:#ff9eb5; --skin:#ffdcc2; }
-  .avatar.mama .av-hair { top:9%; width:72%; height:74%; border-radius:48% 48% 40% 40%; }
+  /* 眉 */
+  .av-brow { position:absolute; top:25%; width:17%; height:4.5%; background:var(--hair); border-radius:6px; }
+  .av-brow.l { left:22%; transform:rotate(-6deg); }
+  .av-brow.r { right:22%; transform:rotate(6deg); }
+  /* 目（アニメ風・大きめキラキラ） */
   .av-eye {
-    position:absolute; top:40%; width:9%; height:13%;
-    background:#3a2c25; border-radius:50%;
+    position:absolute; top:33%; width:23%; height:27%;
+    background:#fff; border:2.5px solid #4a3329;
+    border-radius:52% 52% 50% 50%; overflow:hidden;
   }
-  .av-eye.l { left:30%; } .av-eye.r { right:30%; }
-  .av-cheek {
-    position:absolute; top:55%; width:14%; height:9%;
-    background:rgba(255,140,160,0.55); border-radius:50%;
+  .av-eye.l { left:16%; } .av-eye.r { right:16%; }
+  .av-iris {
+    position:absolute; bottom:-3%; left:50%; transform:translateX(-50%);
+    width:90%; height:84%;
+    background:radial-gradient(circle at 50% 35%, var(--iris,#9a5e3a) 0%, #4e2e1c 92%);
+    border-radius:50%;
   }
-  .av-cheek.l { left:18%; } .av-cheek.r { right:18%; }
+  .av-pupil {
+    position:absolute; bottom:14%; left:50%; transform:translateX(-50%);
+    width:42%; height:44%; background:#241710; border-radius:50%;
+  }
+  .av-shine {
+    position:absolute; top:9%; left:20%; width:30%; height:28%;
+    background:#fff; border-radius:50%;
+  }
+  /* 鼻 */
+  .av-nose {
+    position:absolute; top:53%; left:50%; transform:translateX(-50%);
+    width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent;
+    border-top:7px solid rgba(120,70,40,0.22);
+  }
+  /* 口 */
   .av-mouth {
-    position:absolute; top:62%; left:50%; transform:translateX(-50%);
-    width:24%; height:14%;
-    border:3px solid #cc4a5e; border-top:none;
+    position:absolute; top:64%; left:50%; transform:translateX(-50%);
+    width:22%; height:13%; border:3px solid #d05a6a; border-top:none;
     border-radius:0 0 60% 60%;
+  }
+  /* ほっぺ */
+  .av-cheek { position:absolute; top:53%; width:15%; height:9%; background:rgba(255,130,150,0.5); border-radius:50%; }
+  .av-cheek.l { left:8%; } .av-cheek.r { right:8%; }
+  /* 前髪 */
+  .av-bangs { position:absolute; left:50%; transform:translateX(-50%); z-index:5; }
+
+  /* パパ：黒い短髪 */
+  .avatar.papa { --hair:#241c14; --shirt:#f1e8c6; --skin:#f4cda8; --iris:#7a4a2e; }
+  .avatar.papa .av-hair-back { top:13%; width:60%; height:42%; border-radius:50% 50% 40% 40%; }
+  .avatar.papa .av-bangs {
+    top:13%; width:60%; height:21%; background:var(--hair);
+    border-radius:50% 50% 14% 45% / 60% 60% 30% 60%;
+  }
+  /* ママ：ショートボブ */
+  .avatar.mama { --hair:#3b2a1c; --shirt:#ff9eb5; --skin:#ffdcc2; --iris:#8a5436; }
+  .avatar.mama .av-hair-back { top:12%; width:70%; height:60%; border-radius:48% 48% 46% 46%; }
+  .avatar.mama .av-bangs {
+    top:12%; width:68%; height:25%; background:var(--hair);
+    border-radius:50% 50% 32% 32% / 70% 70% 42% 42%;
   }
 
   /* ===== おえかき ===== */
@@ -2086,13 +2118,17 @@ let wordIdx = 0;
 
 function avatarHTML(type) {
   return '<div class="avatar ' + type + '">'
-    + '<div class="av-hair"></div>'
+    + '<div class="av-hair-back"></div>'
+    + '<div class="av-body"></div>'
     + '<div class="av-face">'
-    +   '<div class="av-eye l"></div><div class="av-eye r"></div>'
+    +   '<div class="av-brow l"></div><div class="av-brow r"></div>'
+    +   '<div class="av-eye l"><div class="av-iris"><div class="av-pupil"></div></div><div class="av-shine"></div></div>'
+    +   '<div class="av-eye r"><div class="av-iris"><div class="av-pupil"></div></div><div class="av-shine"></div></div>'
+    +   '<div class="av-nose"></div>'
     +   '<div class="av-cheek l"></div><div class="av-cheek r"></div>'
     +   '<div class="av-mouth"></div>'
     + '</div>'
-    + '<div class="av-body"></div>'
+    + '<div class="av-bangs"></div>'
     + '</div>';
 }
 
