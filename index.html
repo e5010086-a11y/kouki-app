@@ -471,22 +471,52 @@
   #balloon-stage { flex:1; position:relative; overflow:hidden; }
   .balloon {
     position: absolute;
-    font-size: clamp(54px, 15vw, 90px);
+    font-size: clamp(72px, 20vw, 120px);
     line-height: 1;
     cursor: pointer;
     animation: floatUp var(--dur) linear forwards;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
     user-select: none;
+    padding: 10px;            /* 当たり判定を広く */
+    touch-action: manipulation;
   }
   @keyframes floatUp {
     0%   { transform: translateY(0) rotate(var(--rot)); opacity:1; }
     100% { transform: translateY(-110vh) rotate(calc(var(--rot)*-1)); opacity:0.5; }
   }
-  .balloon.pop { animation: balloonPop 0.3s ease forwards !important; }
+  .balloon.pop { animation: balloonPop 0.35s ease forwards !important; }
   @keyframes balloonPop {
     0%  { transform: scale(1); opacity:1; }
-    40% { transform: scale(1.6); opacity:1; }
+    35% { transform: scale(2.2); opacity:1; }
     100%{ transform: scale(0);  opacity:0; }
+  }
+  /* 弾けたときの大きな演出 */
+  .burst-center {
+    position: absolute;
+    font-size: clamp(120px, 36vw, 240px);
+    line-height: 1;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: burstCenter 0.6s ease-out forwards;
+    z-index: 20;
+    filter: drop-shadow(0 0 20px rgba(255,255,255,0.9));
+  }
+  @keyframes burstCenter {
+    0%   { transform: translate(-50%,-50%) scale(0.2); opacity:1; }
+    45%  { transform: translate(-50%,-50%) scale(1.3); opacity:1; }
+    100% { transform: translate(-50%,-50%) scale(1.8); opacity:0; }
+  }
+  .b-particle {
+    position: absolute;
+    font-size: clamp(34px, 9vw, 56px);
+    line-height: 1;
+    pointer-events: none;
+    z-index: 19;
+    animation: bFly 0.7s ease-out forwards;
+  }
+  @keyframes bFly {
+    0%   { opacity:1; transform: translate(-50%,-50%) scale(1); }
+    100% { opacity:0; transform: translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) scale(0.4); }
   }
   #balloon-score {
     position: absolute; top:12px; left:50%; transform:translateX(-50%);
@@ -1513,6 +1543,39 @@ function stopBalloon() {
   stopBGM();
 }
 
+// 弾けたときの大きな演出（中央の大きな絵文字＋飛び散るキラキラ）
+const BURST_CENTER   = ["💥","🎉","✨","🌟","💫"];
+const BURST_PARTICLE = ["⭐","✨","🌸","💛","💙","🎀","🌟","💖","🌈"];
+
+function balloonBurst(px, py, balloonEmoji) {
+  const stage = document.getElementById("balloon-stage");
+
+  // 中央の大きな絵文字
+  const center = document.createElement("div");
+  center.className = "burst-center";
+  center.textContent = BURST_CENTER[Math.floor(Math.random() * BURST_CENTER.length)];
+  center.style.left = px + "px";
+  center.style.top  = py + "px";
+  stage.appendChild(center);
+  setTimeout(() => center.remove(), 600);
+
+  // 放射状に飛び散るキラキラ
+  const n = 10;
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement("div");
+    p.className = "b-particle";
+    p.textContent = BURST_PARTICLE[Math.floor(Math.random() * BURST_PARTICLE.length)];
+    p.style.left = px + "px";
+    p.style.top  = py + "px";
+    const angle = (Math.PI * 2 / n) * i;
+    const dist  = 110 + Math.random() * 90;
+    p.style.setProperty("--bx", Math.cos(angle) * dist + "px");
+    p.style.setProperty("--by", Math.sin(angle) * dist + "px");
+    stage.appendChild(p);
+    setTimeout(() => p.remove(), 700);
+  }
+}
+
 function spawnBalloon() {
   if (!balloonActive) return;
   const stage = document.getElementById("balloon-stage");
@@ -1531,9 +1594,22 @@ function spawnBalloon() {
     b.classList.add("pop");
     balloonScore++;
     document.getElementById("balloon-score").textContent = "⭐ " + balloonScore;
-    // ポップ音
-    playTone(800 + Math.random()*400, 0.4, 0.12, "sine");
-    setTimeout(() => b.remove(), 300);
+    // 弾けた位置を取得（指で押した場所、なければ風船の中心）
+    const stage = document.getElementById("balloon-stage");
+    const rect  = stage.getBoundingClientRect();
+    const pt    = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
+    let px = (pt.clientX != null) ? pt.clientX - rect.left : 0;
+    let py = (pt.clientY != null) ? pt.clientY - rect.top  : 0;
+    if (!px && !py) {
+      const br = b.getBoundingClientRect();
+      px = br.left - rect.left + br.width / 2;
+      py = br.top  - rect.top  + br.height / 2;
+    }
+    balloonBurst(px, py, b.textContent);
+    // ポップ音（パチン！＋キラキラ）
+    playTone(900 + Math.random()*400, 0.5, 0.10, "triangle");
+    playTone(1600, 0.3, 0.18, "sine");
+    setTimeout(() => b.remove(), 350);
   };
   b.addEventListener("touchstart", e => { e.preventDefault(); pop(e); }, { passive:false });
   b.addEventListener("mousedown", pop);
