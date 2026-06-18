@@ -733,6 +733,48 @@
     color:rgba(255,255,255,0.95); font-weight:bold; letter-spacing:2px;
     text-shadow:0 2px 4px rgba(0,0,0,0.2);
   }
+  /* 似顔絵アバター（写真は使わず安全なイラスト） */
+  .avatar { position:relative; width:min(54vw,240px); height:min(54vw,240px); }
+  .av-body {
+    position:absolute; bottom:2%; left:50%; transform:translateX(-50%);
+    width:86%; height:40%;
+    background:var(--shirt);
+    border-radius:46% 46% 24% 24% / 72% 72% 28% 28%;
+    z-index:1;
+  }
+  .av-hair {
+    position:absolute; left:50%; transform:translateX(-50%);
+    background:var(--hair); z-index:2;
+  }
+  .av-face {
+    position:absolute; top:16%; left:50%; transform:translateX(-50%);
+    width:58%; height:60%;
+    background:var(--skin,#ffe0bd);
+    border-radius:50%; z-index:3;
+    box-shadow: inset -6px -8px 12px rgba(0,0,0,0.07);
+  }
+  /* パパ：黒い短髪・クリーム色の服 */
+  .avatar.papa { --hair:#2b2218; --shirt:#f1e8c6; --skin:#f6d2b0; }
+  .avatar.papa .av-hair { top:10%; width:62%; height:33%; border-radius:50% 50% 42% 42%; }
+  /* ママ：やさしい雰囲気・ロングヘア */
+  .avatar.mama { --hair:#3a2a1d; --shirt:#ff9eb5; --skin:#ffdcc2; }
+  .avatar.mama .av-hair { top:9%; width:72%; height:74%; border-radius:48% 48% 40% 40%; }
+  .av-eye {
+    position:absolute; top:40%; width:9%; height:13%;
+    background:#3a2c25; border-radius:50%;
+  }
+  .av-eye.l { left:30%; } .av-eye.r { right:30%; }
+  .av-cheek {
+    position:absolute; top:55%; width:14%; height:9%;
+    background:rgba(255,140,160,0.55); border-radius:50%;
+  }
+  .av-cheek.l { left:18%; } .av-cheek.r { right:18%; }
+  .av-mouth {
+    position:absolute; top:62%; left:50%; transform:translateX(-50%);
+    width:24%; height:14%;
+    border:3px solid #cc4a5e; border-top:none;
+    border-radius:0 0 60% 60%;
+  }
 
   /* ===== おえかき ===== */
   #draw-page { background: #f8f8f8; }
@@ -2013,8 +2055,8 @@ function initColor() {
 // はじめてのことば
 // ===================================================
 const WORDS = [
-  { emoji:"👨", label:"パパ" },
-  { emoji:"👩", label:"ママ" },
+  { avatar:"papa", label:"パパ" },
+  { avatar:"mama", label:"ママ" },
   { emoji:"👴", label:"おじいちゃん" },
   { emoji:"👵", label:"おばあちゃん" },
   { emoji:"🍚", label:"まんま" },
@@ -2042,13 +2084,29 @@ const WORDS_BG = [
 ];
 let wordIdx = 0;
 
+function avatarHTML(type) {
+  return '<div class="avatar ' + type + '">'
+    + '<div class="av-hair"></div>'
+    + '<div class="av-face">'
+    +   '<div class="av-eye l"></div><div class="av-eye r"></div>'
+    +   '<div class="av-cheek l"></div><div class="av-cheek r"></div>'
+    +   '<div class="av-mouth"></div>'
+    + '</div>'
+    + '<div class="av-body"></div>'
+    + '</div>';
+}
+
 function nextWord(e) {
   wordIdx = (wordIdx + 1) % WORDS.length;
   const d = WORDS[wordIdx];
   const emojiEl = document.getElementById("words-emoji");
   const labelEl = document.getElementById("words-label");
 
-  emojiEl.textContent = d.emoji;
+  if (d.avatar) {
+    emojiEl.innerHTML = avatarHTML(d.avatar);   // 似顔絵イラスト
+  } else {
+    emojiEl.textContent = d.emoji;              // 絵文字
+  }
   labelEl.textContent = d.label;
   // 長い言葉は文字を小さく（はみ出し防止）
   labelEl.style.fontSize = d.label.length > 6 ? "clamp(26px,7vw,46px)" : "clamp(40px,12vw,80px)";
