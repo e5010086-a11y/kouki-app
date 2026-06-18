@@ -671,9 +671,9 @@
   </div>
   <div class="bgm-bar">
     <span class="bgm-label">🎶おんがく</span>
-    <button class="bgm-pick active" data-bgm="0" onclick="setBGM(0)">🎵ポップ</button>
-    <button class="bgm-pick" data-bgm="1" onclick="setBGM(1)">🕺ダンス</button>
-    <button class="bgm-pick" data-bgm="2" onclick="setBGM(2)">🌙ゆめ</button>
+    <button class="bgm-pick active" data-ctx="whack" data-bgm="0" onclick="setBGM('whack',0)">🎵ポップ</button>
+    <button class="bgm-pick" data-ctx="whack" data-bgm="1" onclick="setBGM('whack',1)">🕺ダンス</button>
+    <button class="bgm-pick" data-ctx="whack" data-bgm="2" onclick="setBGM('whack',2)">🔥げんき</button>
   </div>
   <!-- スコア・レベル -->
   <div id="whack-hud">
@@ -724,9 +724,9 @@
   </div>
   <div class="bgm-bar">
     <span class="bgm-label">🎶おんがく</span>
-    <button class="bgm-pick active" data-bgm="0" onclick="setBGM(0)">🎵ポップ</button>
-    <button class="bgm-pick" data-bgm="1" onclick="setBGM(1)">🕺ダンス</button>
-    <button class="bgm-pick" data-bgm="2" onclick="setBGM(2)">🌙ゆめ</button>
+    <button class="bgm-pick active" data-ctx="balloon" data-bgm="0" onclick="setBGM('balloon',0)">🌟きらきら</button>
+    <button class="bgm-pick" data-ctx="balloon" data-bgm="1" onclick="setBGM('balloon',1)">🍼ねんね</button>
+    <button class="bgm-pick" data-ctx="balloon" data-bgm="2" onclick="setBGM('balloon',2)">🎀るんるん</button>
   </div>
   <div id="balloon-stage">
     <div id="balloon-score">⭐ 0</div>
@@ -1290,7 +1290,7 @@ function startWhack() {
 
   buildWhackGrid();
   resumeWhackLoop();
-  startBGM();
+  startBGM('whack');
 
   // カウントダウン（60秒）
   whackCountdown = setInterval(() => {
@@ -1371,7 +1371,8 @@ function endWhack() {
 let bgmTimer    = null;
 let bgmStep     = 0;
 let bgmPlaying  = false;
-let selectedBGM = 0;
+let bgmContext  = null;
+let selectedBGM = { balloon: 0, whack: 0 };
 
 // ドラム音
 let noiseBuffer = null;
@@ -1384,7 +1385,7 @@ function getNoise() {
   for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
   return noiseBuffer;
 }
-function playKick() {
+function playKick(gain = 0.5) {
   const ctx = getAudio();
   const osc = ctx.createOscillator();
   const g   = ctx.createGain();
@@ -1392,7 +1393,7 @@ function playKick() {
   osc.type = "sine";
   osc.frequency.setValueAtTime(160, ctx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.13);
-  g.gain.setValueAtTime(0.5, ctx.currentTime);
+  g.gain.setValueAtTime(gain, ctx.currentTime);
   g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
   osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.18);
 }
@@ -1410,37 +1411,67 @@ function playHat(gain = 0.12) {
 }
 
 // 16ステップのリズムパターン（mel:メロディ周波数 0=休符 / kick:バスドラ / hat:ハイハット）
-const BGM_TRACKS = [
-  {
-    name: "ポップ", emoji: "🎵", step: 165,
-    mel:  [523,0,659,784, 0,659,523,0, 587,0,698,0, 587,0,440,0],
-    kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,1,0],
-    hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
-  },
-  {
-    name: "ダンス", emoji: "🕺", step: 145,
-    mel:  [392,0,392,0, 523,0,587,0, 659,0,587,0, 523,0,440,0],
-    kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
-    hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,1],
-  },
-  {
-    name: "ゆめ", emoji: "🌙", step: 200,
-    mel:  [659,0,0,523, 0,587,0,0, 440,0,0,392, 0,440,0,0],
-    kick: [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
-    hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
-  },
-];
+// melVol:メロディ音量 wave:音色 kickVol:バスドラ音量 hatVol:ハイハット音量
+// ★ページごとに別の曲セット★
+const BGM_SETS = {
+  // バルーン: 赤ちゃん向けのやさしい・かわいい曲（オルゴール風）
+  balloon: [
+    {
+      name: "きらきら", emoji: "🌟", step: 300, wave: "triangle",
+      melVol: 0.14, kickVol: 0.22, hatVol: 0.06,
+      mel:  [523,523,784,784, 880,880,784,0, 698,698,659,659, 587,587,523,0],
+      kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+      hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+    },
+    {
+      name: "ねんね", emoji: "🍼", step: 340, wave: "sine",
+      melVol: 0.13, kickVol: 0.16, hatVol: 0.04,
+      mel:  [659,0,587,0, 523,0,587,0, 440,0,523,0, 392,0,0,0],
+      kick: [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+      hat:  [0,0,0,0, 0,0,1,0, 0,0,0,0, 0,0,1,0],
+    },
+    {
+      name: "るんるん", emoji: "🎀", step: 235, wave: "triangle",
+      melVol: 0.14, kickVol: 0.26, hatVol: 0.08,
+      mel:  [523,659,784,659, 880,784,659,784, 523,659,784,1047, 784,659,523,0],
+      kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+      hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+    },
+  ],
+  // モグラたたき: 元気でノリのいい曲
+  whack: [
+    {
+      name: "ポップ", emoji: "🎵", step: 165, wave: "triangle",
+      mel:  [523,0,659,784, 0,659,523,0, 587,0,698,0, 587,0,440,0],
+      kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,1,0],
+      hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+    },
+    {
+      name: "ダンス", emoji: "🕺", step: 145, wave: "triangle",
+      mel:  [392,0,392,0, 523,0,587,0, 659,0,587,0, 523,0,440,0],
+      kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+      hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,1],
+    },
+    {
+      name: "げんき", emoji: "🔥", step: 200, wave: "triangle",
+      mel:  [659,0,0,523, 0,587,0,0, 440,0,0,392, 0,440,0,0],
+      kick: [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
+      hat:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+    },
+  ],
+};
 
-function startBGM() {
+function startBGM(context) {
   stopBGM();
+  bgmContext = context;
   bgmPlaying = true;
   bgmStep = 0;
-  const t = BGM_TRACKS[selectedBGM];
+  const t = BGM_SETS[context][selectedBGM[context]];
   bgmTimer = setInterval(() => {
     const s = bgmStep % 16;
-    if (t.mel[s])  playTone(t.mel[s], 0.12, t.step * 1.6 / 1000, "triangle");
-    if (t.kick[s]) playKick();
-    if (t.hat[s])  playHat();
+    if (t.mel[s])  playTone(t.mel[s], t.melVol ?? 0.12, t.step * 1.6 / 1000, t.wave ?? "triangle");
+    if (t.kick[s]) playKick(t.kickVol ?? 0.5);
+    if (t.hat[s])  playHat(t.hatVol ?? 0.12);
     bgmStep++;
   }, t.step);
 }
@@ -1451,12 +1482,12 @@ function stopBGM() {
   bgmStep = 0;
 }
 
-function setBGM(i) {
-  selectedBGM = i;
-  document.querySelectorAll(".bgm-pick").forEach(b => {
+function setBGM(context, i) {
+  selectedBGM[context] = i;
+  document.querySelectorAll('.bgm-pick[data-ctx="' + context + '"]').forEach(b => {
     b.classList.toggle("active", parseInt(b.dataset.bgm) === i);
   });
-  if (bgmPlaying) startBGM(); // 再生中なら新しい曲ですぐ切り替え
+  if (bgmPlaying && bgmContext === context) startBGM(context); // 再生中なら即切り替え
 }
 
 // ===================================================
@@ -1472,7 +1503,7 @@ function startBalloon() {
   balloonActive = true;
   document.getElementById("balloon-score").textContent = "⭐ 0";
   document.getElementById("balloon-stage").querySelectorAll(".balloon").forEach(b=>b.remove());
-  startBGM();
+  startBGM('balloon');
   spawnBalloon();
 }
 
