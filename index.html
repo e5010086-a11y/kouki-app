@@ -467,22 +467,78 @@
   .bgm-pick:active { transform: scale(0.93); }
 
   /* ===== バルーンタップ ===== */
-  #balloon-page { background: linear-gradient(180deg, #87ceeb 0%, #b0e0ff 100%); }
+  #balloon-page {
+    background: linear-gradient(180deg, #5b6ee1 0%, #7b8cff 22%, #4fb6f0 55%, #aee9ff 100%);
+  }
   #balloon-stage { flex:1; position:relative; overflow:hidden; }
+  /* やわらかい太陽の光 */
+  #balloon-stage::before {
+    content:""; position:absolute; top:-12%; right:-6%;
+    width:55vw; height:55vw; max-width:430px; max-height:430px;
+    background: radial-gradient(circle, rgba(255,250,210,0.9) 0%, rgba(255,240,170,0.35) 38%, transparent 70%);
+    pointer-events:none; z-index:0;
+  }
+  /* 流れる雲 */
+  .b-cloud {
+    position:absolute; pointer-events:none; z-index:1;
+    font-size: clamp(60px,16vw,110px); opacity:0.92;
+    animation: cloudDrift linear infinite;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.08));
+  }
+  @keyframes cloudDrift {
+    0%   { transform: translateX(-35vw); }
+    100% { transform: translateX(125vw); }
+  }
+  /* きらめく星 */
+  .b-star {
+    position:absolute; pointer-events:none; z-index:1;
+    font-size: clamp(14px,4vw,26px);
+    animation: twinkle ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%,100% { opacity:0.25; transform:scale(0.8); }
+    50%     { opacity:1;    transform:scale(1.25); }
+  }
+  /* ツヤのある立体バルーン */
   .balloon {
-    position: absolute;
-    font-size: clamp(72px, 20vw, 120px);
-    line-height: 1;
-    cursor: pointer;
+    position:absolute;
+    width: clamp(72px,19vw,116px);
+    height: clamp(90px,23vw,140px);
+    cursor:pointer;
     animation: floatUp var(--dur) linear forwards;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
-    user-select: none;
-    padding: 10px;            /* 当たり判定を広く */
-    touch-action: manipulation;
+    user-select:none;
+    touch-action:manipulation;
+    z-index:5;
+    will-change: transform;
+  }
+  .balloon .b-body {
+    position:relative; width:100%; height:86%;
+    border-radius: 50% 50% 48% 48% / 54% 54% 46% 46%;
+    background:
+      radial-gradient(circle at 34% 26%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.25) 14%, transparent 30%),
+      radial-gradient(circle at 50% 42%, var(--c1) 0%, var(--c2) 100%);
+    box-shadow: inset -10px -12px 22px rgba(0,0,0,0.16),
+                inset 6px 8px 14px rgba(255,255,255,0.25),
+                0 8px 14px rgba(0,0,0,0.18);
+  }
+  .balloon .b-body::after {
+    content:""; position:absolute; left:50%; bottom:-9px; transform:translateX(-50%);
+    border-left:8px solid transparent; border-right:8px solid transparent;
+    border-top:11px solid var(--c2);
+  }
+  .balloon .b-string {
+    position:absolute; left:50%; top:84%;
+    width:16%; height:18%;
+    border:2px solid rgba(255,255,255,0.6);
+    border-top:none; border-right:none;
+    border-radius: 0 0 0 80%;
+    transform:translateX(-30%);
+    pointer-events:none;
   }
   @keyframes floatUp {
     0%   { transform: translateY(0) rotate(var(--rot)); opacity:1; }
-    100% { transform: translateY(-110vh) rotate(calc(var(--rot)*-1)); opacity:0.5; }
+    8%   { opacity:1; }
+    100% { transform: translateY(-115vh) rotate(calc(var(--rot)*-1)); opacity:0.85; }
   }
   .balloon.pop { animation: balloonPop 0.35s ease forwards !important; }
   @keyframes balloonPop {
@@ -554,9 +610,15 @@
     100% { opacity:0; transform: translate(-50%,-125%) scale(1) rotate(0); }
   }
   #balloon-score {
-    position: absolute; top:12px; left:50%; transform:translateX(-50%);
-    font-size: clamp(22px,6vw,36px); font-weight:bold;
-    color:white; text-shadow:0 2px 6px rgba(0,0,0,0.4);
+    position: absolute; top:14px; left:50%; transform:translateX(-50%);
+    font-size: clamp(20px,5.5vw,32px); font-weight:900; letter-spacing:1px;
+    color:#fff;
+    padding:8px 24px; border-radius:30px;
+    background: rgba(255,255,255,0.22);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    border:2px solid rgba(255,255,255,0.55);
+    box-shadow:0 4px 16px rgba(0,0,0,0.2), inset 0 1px 5px rgba(255,255,255,0.45);
+    text-shadow:0 2px 4px rgba(0,0,0,0.3);
     pointer-events:none; z-index:10; white-space:nowrap;
   }
 
@@ -794,6 +856,14 @@
     <button class="bgm-pick" data-ctx="balloon" data-bgm="2" onclick="setBGM('balloon',2)">🎀るんるん</button>
   </div>
   <div id="balloon-stage">
+    <div class="b-cloud" style="top:10%; animation-duration:26s;">☁️</div>
+    <div class="b-cloud" style="top:36%; animation-duration:34s; animation-delay:-12s;">☁️</div>
+    <div class="b-cloud" style="top:60%; animation-duration:30s; animation-delay:-20s;">⛅</div>
+    <div class="b-star" style="top:18%; left:16%; animation-duration:2.2s;">✨</div>
+    <div class="b-star" style="top:28%; left:78%; animation-duration:1.8s; animation-delay:0.5s;">⭐</div>
+    <div class="b-star" style="top:54%; left:8%;  animation-duration:2.6s; animation-delay:0.9s;">🌟</div>
+    <div class="b-star" style="top:72%; left:86%; animation-duration:2.0s; animation-delay:0.3s;">✨</div>
+    <div class="b-star" style="top:46%; left:50%; animation-duration:2.4s; animation-delay:1.2s;">💫</div>
     <div id="balloon-score">⭐ 0</div>
   </div>
 </div>
@@ -1558,7 +1628,18 @@ function setBGM(context, i) {
 // ===================================================
 // バルーンタップ
 // ===================================================
-const BALLOONS = ["🎈","🎀","🌸","⭐","🌟","🍭","🌈","🎊","💛","💙","❤️","💜"];
+// ツヤのあるバルーンの色（[ハイライト寄りの色, 濃い色]）
+const BALLOON_COLORS = [
+  ["#ff9ec0","#ff3d7f"], // ピンク
+  ["#ffd980","#ff9f1c"], // オレンジ
+  ["#9ed8ff","#1e90ff"], // ブルー
+  ["#b8f5a6","#34c759"], // グリーン
+  ["#dcb0ff","#9b59b6"], // パープル
+  ["#fff48f","#ffcc00"], // ゴールド
+  ["#a7fff0","#00c2a8"], // ターコイズ
+  ["#ffb3b3","#ff4d4d"], // レッド
+  ["#ffc6e8","#ff5fb0"], // ローズ
+];
 let balloonScore = 0;
 let balloonTimer = null;
 let balloonActive = false;
@@ -1733,18 +1814,17 @@ function spawnBalloon() {
   const stage = document.getElementById("balloon-stage");
   const b = document.createElement("div");
   b.className = "balloon";
-  const emoji = BALLOONS[Math.floor(Math.random() * BALLOONS.length)];
-  b.textContent = emoji;
+  const col = BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)];
+  b.innerHTML = '<div class="b-body"></div><div class="b-string"></div>';
   const x = 5 + Math.random() * 80;
-  const dur = 3.5 + Math.random() * 3;
-  const rot = (Math.random() - 0.5) * 30;
-  b.style.cssText = `left:${x}vw; bottom:-15%; --dur:${dur}s; --rot:${rot}deg;`;
+  const dur = 4 + Math.random() * 3;
+  const rot = (Math.random() - 0.5) * 24;
+  b.style.cssText = `left:${x}vw; bottom:-18%; --dur:${dur}s; --rot:${rot}deg; --c1:${col[0]}; --c2:${col[1]};`;
 
   const pop = (e) => {
     if (b.classList.contains("pop")) return;
     e.stopPropagation();
     b.classList.add("pop");
-    b.textContent = "💥"; // 風船そのものが割れたマークに変わる
     balloonScore++;
     document.getElementById("balloon-score").textContent = "⭐ " + balloonScore;
     // 弾けた位置を取得（指で押した場所、なければ風船の中心）
