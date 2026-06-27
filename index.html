@@ -518,8 +518,8 @@
   /* ツヤのある立体バルーン */
   .balloon {
     position:absolute;
-    width: clamp(72px,19vw,116px);
-    height: clamp(90px,23vw,140px);
+    width: clamp(125px,32vw,180px);
+    height: clamp(155px,40vw,220px);
     cursor:pointer;
     animation: floatUp var(--dur) linear forwards;
     user-select:none;
@@ -1058,6 +1058,12 @@
     <button class="bgm-pick active" data-ctx="balloon" data-bgm="0" onclick="setBGM('balloon',0)">🌟きらきら</button>
     <button class="bgm-pick" data-ctx="balloon" data-bgm="1" onclick="setBGM('balloon',1)">🍼ねんね</button>
     <button class="bgm-pick" data-ctx="balloon" data-bgm="2" onclick="setBGM('balloon',2)">🎀るんるん</button>
+  </div>
+  <div class="bgm-bar">
+    <span class="bgm-label">⚡はやさ</span>
+    <button class="bgm-pick spd-pick" data-spd="0" onclick="setBalloonSpeed(0)">🐢ゆっくり</button>
+    <button class="bgm-pick spd-pick active" data-spd="1" onclick="setBalloonSpeed(1)">🚶ふつう</button>
+    <button class="bgm-pick spd-pick" data-spd="2" onclick="setBalloonSpeed(2)">🐇はやい</button>
   </div>
   <div id="balloon-stage">
     <div class="b-cloud" style="top:10%; animation-duration:26s;">☁️</div>
@@ -1866,6 +1872,20 @@ let balloonScore = 0;
 let balloonTimer = null;
 let balloonActive = false;
 
+// はやさ設定（durMin/durRange:浮かぶ秒数、intMin/intRange:次が出る間隔ms）
+const BALLOON_SPEEDS = [
+  { durMin:7.0, durRange:3.0, intMin:1300, intRange:600 }, // 🐢ゆっくり（押しやすい）
+  { durMin:4.8, durRange:2.5, intMin:950,  intRange:500 }, // 🚶ふつう
+  { durMin:2.8, durRange:1.6, intMin:600,  intRange:350 }, // 🐇はやい
+];
+let balloonSpeed = 1;
+function setBalloonSpeed(i) {
+  balloonSpeed = i;
+  document.querySelectorAll(".spd-pick").forEach(b => {
+    b.classList.toggle("active", parseInt(b.dataset.spd) === i);
+  });
+}
+
 function startBalloon() {
   balloonScore = 0;
   balloonActive = true;
@@ -2038,8 +2058,9 @@ function spawnBalloon() {
   b.className = "balloon";
   const col = BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)];
   b.innerHTML = '<div class="b-body"></div><div class="b-string"></div>';
-  const x = 5 + Math.random() * 80;
-  const dur = 4 + Math.random() * 3;
+  const sp = BALLOON_SPEEDS[balloonSpeed];
+  const x = 5 + Math.random() * 75;
+  const dur = sp.durMin + Math.random() * sp.durRange;
   const rot = (Math.random() - 0.5) * 24;
   b.style.cssText = `left:${x}vw; bottom:-18%; --dur:${dur}s; --rot:${rot}deg; --c1:${col[0]}; --c2:${col[1]};`;
 
@@ -2072,7 +2093,7 @@ function spawnBalloon() {
   stage.appendChild(b);
 
   // 次の風船を間隔を置いて出す
-  const interval = 900 + Math.random() * 600;
+  const interval = sp.intMin + Math.random() * sp.intRange;
   balloonTimer = setTimeout(spawnBalloon, interval);
 }
 
