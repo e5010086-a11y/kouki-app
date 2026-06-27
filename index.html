@@ -2,10 +2,22 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- ホーム画面に追加でアプリのように全画面で使える設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="こうきのあそびば">
 <title>こうきくんのあそびば</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  /* ダブルタップでの拡大を防ぐ（赤ちゃんが触っても拡大しない） */
+  html, body, .page, .top-bar, .mode-btn, .music-btn,
+  #tap-stage, #number-stage, #color-stage, #words-stage,
+  #music-grid, #balloon-stage, #whack-grid, .whack-hole,
+  .back-btn, .lock-btn, .bgm-pick, .pin-btn {
+    touch-action: manipulation;
+  }
   body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background: #fff9f0;
@@ -940,7 +952,7 @@
     <span class="page-title">タップしてみよう！</span>
     <button class="lock-btn" onclick="toggleLock()" id="lock-toggle-btn">🔓</button>
   </div>
-  <div id="tap-stage" onclick="nextItem(event)">
+  <div id="tap-stage">
     <div id="tap-emoji">🐘</div>
     <div id="tap-label">ぞう</div>
     <div id="tap-hint">👆 タップしてね</div>
@@ -1040,7 +1052,7 @@
     <span class="page-title">🔢 かずをおぼえよう！</span>
     <button class="lock-btn" onclick="toggleLock()">🔓</button>
   </div>
-  <div id="number-stage" onclick="nextNumber(event)">
+  <div id="number-stage">
     <div id="number-big">1</div>
     <div id="number-label">いち</div>
     <div id="number-dots"></div>
@@ -1054,7 +1066,7 @@
     <span class="page-title">🌈 いろのなまえ！</span>
     <button class="lock-btn" onclick="toggleLock()">🔓</button>
   </div>
-  <div id="color-stage" onclick="nextColor(event)">
+  <div id="color-stage">
     <div id="color-circle"></div>
     <div id="color-name">あか</div>
     <div id="color-hint">👆 タップしてね</div>
@@ -1068,7 +1080,7 @@
     <span class="page-title">💬 はじめてのことば！</span>
     <button class="lock-btn" onclick="toggleLock()">🔓</button>
   </div>
-  <div id="words-stage" onclick="nextWord(event)">
+  <div id="words-stage">
     <div id="words-card">
       <div id="words-emoji">👨</div>
     </div>
@@ -1315,7 +1327,7 @@ function buildMusicGrid() {
     el.className = "music-btn";
     el.style.background = btn.color;
     el.innerHTML = `<span class="icon">${btn.icon}</span><span class="name">${btn.name}</span>`;
-    el.addEventListener("click", () => {
+    onTap(el, () => {
       playMusicSound(btn.type, btn.freqs);
       el.classList.remove("playing");
       void el.offsetWidth;
@@ -2379,6 +2391,36 @@ function checkPin() {
     setTimeout(() => { overlay.style.transition=""; }, 400);
   }
 }
+
+// 軽く触れただけで反応するタップ補助
+// touchstart（指が触れた瞬間）で発火。後続のclickは重複しないよう抑止。
+function onTap(el, fn) {
+  let handled = false;
+  el.addEventListener("touchstart", (e) => {
+    handled = true;
+    fn(e);
+  }, { passive: true });
+  el.addEventListener("click", (e) => {
+    if (handled) { handled = false; return; } // タッチ済みならclickは無視
+    fn(e);                                     // PC（マウス）はこちら
+  });
+}
+
+// 全画面タップ系のゲームを「触れた瞬間」に反応させる
+onTap(document.getElementById("tap-stage"),    (e) => nextItem(e));
+onTap(document.getElementById("number-stage"), (e) => nextNumber(e));
+onTap(document.getElementById("color-stage"),  (e) => nextColor(e));
+onTap(document.getElementById("words-stage"),  (e) => nextWord(e));
+
+// ===== 赤ちゃんが触っても画面が拡大しないようにする =====
+// ピンチ（2本指）ズーム防止（iOS Safari）
+document.addEventListener("gesturestart",  (e) => e.preventDefault());
+document.addEventListener("gesturechange", (e) => e.preventDefault());
+document.addEventListener("gestureend",    (e) => e.preventDefault());
+// 2本指のタッチ移動でのズーム防止
+document.addEventListener("touchmove", (e) => {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
 
 // 初期化
 buildMusicGrid();
