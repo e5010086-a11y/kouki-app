@@ -736,6 +736,14 @@
     filter: drop-shadow(0 8px 10px rgba(0,0,0,0.2));
   }
   #words-emoji.pop { animation: numPop 0.4s ease; }
+  /* 本物のイラスト写真表示 */
+  .words-photo {
+    width: min(62vw, 300px);
+    height: min(62vw, 300px);
+    object-fit: cover;
+    border-radius: 28px;
+    display: block;
+  }
   #words-label {
     font-size: clamp(40px, 12vw, 80px);
     font-weight:900; color:#fff;
@@ -2160,7 +2168,7 @@ function initColor() {
 // はじめてのことば
 // ===================================================
 const WORDS = [
-  { avatar:"baby", label:"こうきくん" },
+  { img:"kouki.webp", label:"こうきくん" },
   { avatar:"papa", label:"パパ" },
   { avatar:"mama", label:"ママ" },
   { avatar:"ojiichan", label:"おじいちゃん" },
@@ -2213,7 +2221,9 @@ function nextWord(e) {
   const emojiEl = document.getElementById("words-emoji");
   const labelEl = document.getElementById("words-label");
 
-  if (d.avatar) {
+  if (d.img) {
+    emojiEl.innerHTML = '<img class="words-photo" src="' + d.img + '" alt="">'; // 本物のイラスト画像
+  } else if (d.avatar) {
     emojiEl.innerHTML = avatarHTML(d.avatar);   // 似顔絵イラスト
   } else {
     emojiEl.textContent = d.emoji;              // 絵文字
