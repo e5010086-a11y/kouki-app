@@ -1189,7 +1189,9 @@ const ITEMS = [
 ];
 
 const MUSIC_BUTTONS = [
-  { icon:"🥁", name:"ドン", color:"#ffb3ba", freqs:[120,0.9,0.1,0.15], type:"drum" },
+  { icon:"🥁", name:"たいこ", color:"#ffb3ba", freqs:[120,0.9,0.4,0.3], type:"taiko" },
+  { icon:"💥", name:"シンバル", color:"#ffe9a8", freqs:[6000,0.5,0.8,0.5], type:"cymbal" },
+  { icon:"🎐", name:"すず", color:"#cfe9ff", freqs:[2600,0.4,0.5,0.3], type:"suzu" },
   { icon:"🔔", name:"チーン", color:"#ffe4a0", freqs:[1200,0.6,1.2,0.8], type:"bell" },
   { icon:"🎹", name:"ドレミ", color:"#b3d9ff", freqs:[261,0.5,0.4,0.3], type:"piano" },
   { icon:"🎺", name:"プップー", color:"#ffd6a5", freqs:[440,0.7,0.3,0.2], type:"trumpet" },
@@ -1255,6 +1257,33 @@ function playMusicSound(type, [freq, gain, dur]) {
   } else if (type === "trumpet") {
     playTone(freq, gain, dur, "square");
     setTimeout(()=>playTone(freq*1.5, gain*0.5, dur*0.5, "square"), 80);
+  } else if (type === "taiko") {
+    // 太鼓：低く響く「ドーン」
+    const ctx = getAudio();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = "sine";
+    o.frequency.setValueAtTime(150, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(55, ctx.currentTime + 0.25);
+    g.gain.setValueAtTime(0.9, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.5);
+    playNoise(0.08, 0.3, "lowpass", 1200); // 皮を叩くアタック音
+  } else if (type === "cymbal") {
+    // シンバル：金属的な「シャーン」
+    playNoise(0.9, 0.45, "highpass", 5000);
+    playNoise(0.5, 0.25, "bandpass", 9000);
+    [5200, 7400, 9300].forEach(f => playTone(f, 0.10, 0.6, "square"));
+  } else if (type === "suzu") {
+    // 鈴：高い音がチリチリ鳴る
+    const base = [2300, 2600, 2900, 3300, 2500];
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => {
+        const f = base[Math.floor(Math.random()*base.length)] + Math.random()*200;
+        playTone(f, 0.16, 0.25, "sine");
+        playTone(f*1.5, 0.07, 0.2, "sine");
+      }, i * 55);
+    }
   } else {
     playTone(freq, gain, dur, "sine");
     playTone(freq*1.5, gain*0.3, dur*0.6, "sine");
