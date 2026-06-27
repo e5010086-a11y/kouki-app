@@ -149,6 +149,17 @@
   }
   .key-emoji  { line-height: 1; }
   .key-label  { font-size: clamp(9px, 2.5vw, 13px); opacity: 0.75; margin-top: 3px; font-weight: bold; }
+  /* ピアノ：よこむき案内＆横向き最適化 */
+  #piano-rotate-hint {
+    text-align:center; padding:7px 10px;
+    font-size:clamp(13px,3.6vw,17px); color:#7c5cbf; font-weight:bold;
+    background:rgba(255,255,255,0.65); letter-spacing:1px;
+  }
+  @media (orientation: landscape) {
+    #piano-rotate-hint { display:none; }
+    #piano-wrap { padding:6px; gap:4px; }
+    #piano-note-display { min-height:0; font-size:clamp(18px,5vh,32px); }
+  }
 
   /* ===== ロック機能 ===== */
   #lock-overlay {
@@ -1040,6 +1051,7 @@
     <span class="page-title">🎹 ピアノをひこう！</span>
     <button class="lock-btn" onclick="toggleLock()">🔓</button>
   </div>
+  <div id="piano-rotate-hint">📱↔️ スマホを よこむき にすると おおきくひけるよ！</div>
   <div id="piano-wrap">
     <div id="piano-note-display">タッチしてね🎵</div>
     <div id="piano-keys"></div>
@@ -1391,6 +1403,8 @@ function showPage(id) {
     initColor();
   } else if (id === "words-page") {
     initWords();
+  } else if (id === "piano-page") {
+    setTimeout(buildPianoKeys, 30); // 今の向きに合わせて鍵盤を作り直す
   } else if (id === "draw-page") {
     setTimeout(initCanvas, 50);
   }
@@ -1447,13 +1461,21 @@ function buildPianoKeys() {
   const wrap = document.getElementById("piano-keys");
   wrap.innerHTML = "";
 
+  const isLandscape = window.innerWidth > window.innerHeight;
   const vw = window.innerWidth;
   const WN = WHITE_KEYS.length; // 8
   const gap = 3;
-  const wKeyW = Math.min(Math.floor((vw - 32 - gap*(WN-1)) / WN), 68);
-  const wKeyH = Math.min(wKeyW * 3.0, 200);
+  const pad = 12;
+  // 横幅は画面いっぱいに（上限なし＝横向きで全画面に広がる）
+  const wKeyW = Math.floor((vw - pad*2 - gap*(WN-1)) / WN);
+  // 高さは表示エリアいっぱいに（横向きでより大きく）
+  const wrapEl = document.getElementById("piano-wrap");
+  const noteEl = document.getElementById("piano-note-display");
+  let availH = (wrapEl ? wrapEl.clientHeight : 0) - (noteEl ? noteEl.offsetHeight : 60) - 20;
+  if (availH < 120) availH = window.innerHeight - (isLandscape ? 100 : 170);
+  const wKeyH = Math.max(150, Math.min(availH, isLandscape ? 560 : 300));
   const bKeyW = Math.round(wKeyW * 0.62);
-  const bKeyH = Math.round(wKeyH * 0.62);
+  const bKeyH = Math.round(wKeyH * 0.60);
 
   const totalW = WN * wKeyW + (WN-1) * gap;
   wrap.style.width  = totalW + "px";
@@ -2472,6 +2494,13 @@ document.addEventListener("gestureend",    (e) => e.preventDefault());
 document.addEventListener("touchmove", (e) => {
   if (e.touches.length > 1) e.preventDefault();
 }, { passive: false });
+
+// 画面の向きが変わったらピアノを作り直す（横向きで全画面表示）
+window.addEventListener("resize", () => {
+  if (document.getElementById("piano-page").classList.contains("active")) {
+    setTimeout(buildPianoKeys, 120);
+  }
+});
 
 // 初期化
 buildMusicGrid();
