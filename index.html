@@ -1511,10 +1511,10 @@ function buildPianoKeys() {
   // 横向きは音符表示を重ねて出すので、その分を引かず高さを目いっぱい使う
   let availH = isLandscape
     ? (wrapEl ? wrapEl.clientHeight : 0) - 6
-    : (wrapEl ? wrapEl.clientHeight : 0) - (noteEl ? noteEl.offsetHeight : 40) - 10;
-  if (availH < 120) availH = window.innerHeight - (isLandscape ? 56 : 170);
-  // 横向きは高さも目いっぱい（上限を大きく）
-  const wKeyH = Math.max(150, Math.min(availH, isLandscape ? 1200 : 300));
+    : (wrapEl ? wrapEl.clientHeight : 0) - (noteEl ? noteEl.offsetHeight : 40) - 36;
+  if (availH < 120) availH = window.innerHeight - (isLandscape ? 56 : 200);
+  // 縦・横どちらも表示エリアいっぱいに（上限を大きく外す）
+  const wKeyH = Math.max(150, Math.min(availH, 1400));
   const bKeyW = Math.round(wKeyW * 0.62);
   const bKeyH = Math.round(wKeyH * 0.60);
 
