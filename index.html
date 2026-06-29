@@ -157,9 +157,16 @@
   }
   @media (orientation: landscape) {
     #piano-rotate-hint { display:none; }
-    #piano-page .top-bar { padding-top: max(4px, env(safe-area-inset-top)); padding-bottom:4px; }
-    #piano-wrap { padding:2px; gap:2px; }
-    #piano-note-display { min-height:0; font-size:clamp(15px,4vh,24px); }
+    #piano-page .top-bar { padding-top: max(2px, env(safe-area-inset-top)); padding-bottom:2px; }
+    #piano-page .back-btn, #piano-page .lock-btn { font-size:22px; padding:3px 6px; }
+    #piano-page .page-title { font-size:clamp(15px,4vw,20px); }
+    #piano-wrap { padding:2px; gap:0; position:relative; }
+    /* 音符表示は鍵盤の上に重ねて、鍵盤の高さを最大化 */
+    #piano-note-display {
+      position:absolute; top:2px; left:50%; transform:translateX(-50%);
+      min-height:0; font-size:clamp(14px,3.4vh,20px);
+      pointer-events:none; z-index:5; opacity:0.85;
+    }
   }
 
   /* ===== ロック機能 ===== */
@@ -1501,8 +1508,11 @@ function buildPianoKeys() {
   // 高さは表示エリアいっぱいに（横向きでより大きく）
   const wrapEl = document.getElementById("piano-wrap");
   const noteEl = document.getElementById("piano-note-display");
-  let availH = (wrapEl ? wrapEl.clientHeight : 0) - (noteEl ? noteEl.offsetHeight : 40) - 10;
-  if (availH < 120) availH = window.innerHeight - (isLandscape ? 76 : 170);
+  // 横向きは音符表示を重ねて出すので、その分を引かず高さを目いっぱい使う
+  let availH = isLandscape
+    ? (wrapEl ? wrapEl.clientHeight : 0) - 6
+    : (wrapEl ? wrapEl.clientHeight : 0) - (noteEl ? noteEl.offsetHeight : 40) - 10;
+  if (availH < 120) availH = window.innerHeight - (isLandscape ? 56 : 170);
   // 横向きは高さも目いっぱい（上限を大きく）
   const wKeyH = Math.max(150, Math.min(availH, isLandscape ? 1200 : 300));
   const bKeyW = Math.round(wKeyW * 0.62);
